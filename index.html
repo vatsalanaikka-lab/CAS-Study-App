@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+  <title>CAS Study App</title>
+  <link rel="manifest" href="manifest.json"/>
+  <meta name="theme-color" content="#0f172a"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="CAS Study"/>
+  <style>*{box-sizing:border-box;margin:0;padding:0}body{background:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
+<script type="text/babel">
+const {useState} = React;
+
+const EXAM_DATE = new Date("2026-10-20");
+const PHASE_META = {
+  1:{label:"Phase 1",desc:"Exam 5 Priority",color:"#ef4444",bg:"#fef2f2",border:"#fecaca",weekday:"1hr E5 + 30min MAS-I",weekend:"2hrs E5 + 1hr MAS-I"},
+  2:{label:"Phase 2",desc:"Balanced",color:"#f59e0b",bg:"#fffbeb",border:"#fde68a",weekday:"45min E5 + 45min MAS-I",weekend:"1.5hrs each"},
+  3:{label:"Phase 3",desc:"Mock Exam Focus",color:"#8b5cf6",bg:"#f5f3ff",border:"#ddd6fe",weekday:"45min E5 + 45min MAS-I",weekend:"1.5hrs each"},
+};
+
+const WEEKS = [
+  {id:0, start:"2026-06-12",dates:"Jun 12–14",   label:"Kickoff",   phase:1,hrs:7.5, e5:"A8 — Classification & territory rating differentials (W&M Ch. 9–10)",              mas:"PM: 1.0 Basics — review what you know, note gaps"},
+  {id:1, start:"2026-06-15",dates:"Jun 15–21",   label:"Week 1",    phase:1,hrs:13.5,e5:"A8 — Deductibles & ILFs: loss elimination ratios, basic/total limits (Ch. 11)",     mas:"PM: 1.1 Claim Severity + 1.2 Insurance Applications"},
+  {id:2, start:"2026-06-22",dates:"Jun 22–28",   label:"Week 2",    phase:1,hrs:13.5,e5:"A8 — GLMs: output, diagnostics (deviance, chi-square, consistency), validation (Ch. 15)", mas:"PM: 1.3 Tail Properties + 1.4 Poisson Processes"},
+  {id:3, start:"2026-06-29",dates:"Jun 29–Jul 5",label:"Week 3",    phase:1,hrs:13.5,e5:"A8 — Past paper Q's on rating differentials; identify remaining concept gaps",      mas:"PM: 1.5 Reliability Theory + 1.6 Discrete Markov Chains"},
+  {id:4, start:"2026-07-06",dates:"Jul 6–12",    label:"Week 4",    phase:1,hrs:13.5,e5:"A1 — Exposures (Ch. 3–4) + A6 — Beyond cost-based rates (Ch. 13)",                  mas:"PM: 1.7 Life Contingencies + 1.8 Simulation + Section Review"},
+  {id:5, start:"2026-07-13",dates:"Jul 13–19",   label:"Week 5",    phase:1,hrs:13.5,e5:"A7 — Risk classification, ASOP 12 (Ch. 9) + A9 — Rate implementation (Ch. 14)",     mas:"Stats: 2.1 Parameter & Density Estimation + 2.2 Estimator Quality"},
+  {id:6, start:"2026-07-20",dates:"Jul 20–26",   label:"Week 6",    phase:1,hrs:13.5,e5:"Ratemaking mixed past paper practice — all weak topics (A1, A6, A7, A8, A9)",       mas:"Stats: 2.3 Hypothesis Testing + 2.4 Most Powerful Tests"},
+  {id:7, start:"2026-07-27",dates:"Jul 27–Aug 2",label:"Week 7",    phase:2,hrs:13.5,e5:"Reserving: chain ladder & BF method review + light Ratemaking mixed Q's",            mas:"Stats: 2.5 Goodness of Fit Tests + 2.6 Confidence Intervals"},
+  {id:8, start:"2026-08-03",dates:"Aug 3–9",     label:"Week 8 ⚑", phase:2,hrs:13.5,e5:"Exam 5 full mock (timed) + detailed review of wrong answers",                        mas:"Stats: 2.7 Order Statistics + Section Review"},
+  {id:9, start:"2026-08-10",dates:"Aug 10–16",   label:"Week 9",    phase:2,hrs:13.5,e5:"Target weak spots from mock exam",                                                    mas:"LM: 3.1 Intro to Statistical Learning + 3.2 Simple Linear Regression"},
+  {id:10,start:"2026-08-17",dates:"Aug 17–23",   label:"Week 10",   phase:2,hrs:13.5,e5:"Exam 5 timed past papers — Ratemaking focus",                                         mas:"LM: 3.3 Multiple Linear Regression + 3.4 ANOVA"},
+  {id:11,start:"2026-08-24",dates:"Aug 24–30",   label:"Week 11",   phase:2,hrs:13.5,e5:"Exam 5 timed past papers — Reserving focus",                                          mas:"LM: 3.5 Assumptions + 3.6 Model Selection + 3.7 Other Regression"},
+  {id:12,start:"2026-08-31",dates:"Aug 31–Sep 6",label:"Week 12",   phase:2,hrs:13.5,e5:"Exam 5 full mock (timed) + review + identify remaining gaps",                         mas:"LM: 3.8 GLMs + 3.9 Binomial & Categorical Regression"},
+  {id:13,start:"2026-09-07",dates:"Sep 7–13",    label:"Week 13",   phase:2,hrs:13.5,e5:"Exam 5 — drill remaining weak spots; maintain Reserving",                             mas:"LM: 3.10 Poisson Regression + 3.11 GAMs + Section Review"},
+  {id:14,start:"2026-09-14",dates:"Sep 14–20",   label:"Week 14",   phase:3,hrs:13.5,e5:"Exam 5 full mock under exam conditions",                                              mas:"MAS-I mixed practice — all 3 sections"},
+  {id:15,start:"2026-09-21",dates:"Sep 21–27",   label:"Week 15",   phase:3,hrs:13.5,e5:"Exam 5 mock review + formula cram (key ratemaking & reserving formulas)",             mas:"MAS-I timed practice — 30 Q in 60 min + review"},
+  {id:16,start:"2026-09-28",dates:"Sep 28–Oct 4",label:"Week 16",   phase:3,hrs:13.5,e5:"Exam 5 past papers — full mixed; focus on written justification Q's",                 mas:"MAS-I full mock exam + identify weak spots"},
+  {id:17,start:"2026-10-05",dates:"Oct 5–11",    label:"Week 17",   phase:3,hrs:13.5,e5:"Exam 5 final concept + formula cram; light mock",                                     mas:"MAS-I weak spot targeting + formula cram (all 3 sections)"},
+  {id:18,start:"2026-10-12",dates:"Oct 12–18",   label:"Week 18",   phase:3,hrs:13.5,e5:"Light review only — rest well, sleep early",                                          mas:"Light review only — rest well, sleep early"},
+  {id:19,start:"2026-10-19",dates:"Oct 19–25",   label:"Exam Week", phase:3,hrs:0,   e5:"🎓 Exam 5 — you've got this!",                                                        mas:"🎓 MAS-I — you've got this!"},
+];
+
+const STUDY_WEEKS = WEEKS.filter(w => w.id < 19);
+const TOTAL_HRS = STUDY_WEEKS.reduce((s,w) => s+w.hrs, 0);
+
+function loadDone() {
+  try { const s = localStorage.getItem("cas_weeks_v2"); return s ? new Set(JSON.parse(s)) : new Set(); }
+  catch(e) { return new Set(); }
+}
+function saveDone(s) {
+  try { localStorage.setItem("cas_weeks_v2", JSON.stringify([...s])); } catch(e) {}
+}
+function getCurrentWeekId() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  let cur = 0;
+  for (const w of WEEKS) { if (today >= new Date(w.start)) cur = w.id; }
+  return cur;
+}
+function getDaysUntil() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  return Math.max(0, Math.ceil((EXAM_DATE - today) / 86400000));
+}
+
+const Checkbox = ({checked}) => (
+  <div style={{width:20,height:20,borderRadius:5,flexShrink:0,border:`1.5px solid ${checked?"#10b981":"#d1d5db"}`,background:checked?"#10b981":"transparent",display:"flex",alignItems:"center",justifyContent:"center"}}>
+    {checked && <span style={{color:"#fff",fontSize:12,lineHeight:1}}>✓</span>}
+  </div>
+);
+
+function App() {
+  const [tab, setTab]     = useState("home");
+  const [done, setDone]   = useState(loadDone);
+  const [filter, setFilter] = useState(0);
+  const curId    = getCurrentWeekId();
+  const daysLeft = getDaysUntil();
+
+  function toggle(id) {
+    if (id === 19) return;
+    const n = new Set(done);
+    n.has(id) ? n.delete(id) : n.add(id);
+    setDone(n); saveDone(n);
+  }
+
+  const loggedHrs = STUDY_WEEKS.filter(w => done.has(w.id)).reduce((s,w) => s+w.hrs, 0);
+  const pct       = Math.round(done.size / STUDY_WEEKS.length * 100);
+  const curWeek   = WEEKS.find(w => w.id === curId);
+  const nextWeek  = WEEKS.find(w => w.id === curId + 1);
+  const ph        = curWeek ? PHASE_META[curWeek.phase] : PHASE_META[1];
+
+  return (
+    <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",maxWidth:480,margin:"0 auto",minHeight:"100vh",background:"#f8fafc",display:"flex",flexDirection:"column"}}>
+      <div style={{flex:1,overflowY:"auto",paddingBottom:68}}>
+
+        {/* ── HOME ── */}
+        {tab==="home" && <>
+          <div style={{background:"linear-gradient(135deg,#0f172a,#1e3a5f)",padding:"28px 20px 22px",color:"#fff"}}>
+            <div style={{fontSize:12,color:"#94a3b8",marginBottom:3}}>Welcome back</div>
+            <div style={{fontSize:22,fontWeight:800,marginBottom:18}}>Hi, Vatsala 👋</div>
+            <div style={{display:"flex",gap:10,marginBottom:18}}>
+              {[{val:daysLeft,label:"days to exam",color:"#f87171"},{val:`${pct}%`,label:"complete",color:"#34d399"},{val:`${Math.round(loggedHrs)}h`,label:"logged",color:"#60a5fa"}].map(({val,label,color})=>(
+                <div key={label} style={{flex:1,background:"rgba(255,255,255,0.08)",borderRadius:12,padding:"12px 10px",textAlign:"center"}}>
+                  <div style={{fontSize:24,fontWeight:800,color}}>{val}</div>
+                  <div style={{fontSize:11,color:"#94a3b8",marginTop:2}}>{label}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{height:5,background:"rgba(255,255,255,0.15)",borderRadius:99,overflow:"hidden"}}>
+              <div style={{height:"100%",width:`${pct}%`,background:"linear-gradient(90deg,#34d399,#60a5fa)",borderRadius:99,transition:"width 0.5s"}}/>
+            </div>
+            <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"#475569",marginTop:5}}>
+              <span>{done.size}/{STUDY_WEEKS.length} weeks done</span>
+              <span>{Math.round(TOTAL_HRS-loggedHrs)}hrs remaining</span>
+            </div>
+          </div>
+
+          <div style={{padding:"14px 14px 0"}}>
+            {curWeek && (
+              <div style={{background:"#fff",borderRadius:12,padding:14,marginBottom:12,border:"1px solid #e2e8f0"}}>
+                <div style={{fontSize:10,fontWeight:700,color:"#9ca3af",letterSpacing:"0.06em",marginBottom:8}}>DAILY SPLIT · {ph.label} — {ph.desc}</div>
+                <div style={{display:"flex",gap:8}}>
+                  {[["WEEKDAYS",ph.weekday],["WEEKENDS",ph.weekend]].map(([t,v])=>(
+                    <div key={t} style={{flex:1,background:"#f8fafc",borderRadius:8,padding:"8px 10px",borderLeft:`3px solid ${ph.color}`}}>
+                      <div style={{fontSize:9,color:"#9ca3af",fontWeight:700}}>{t}</div>
+                      <div style={{fontSize:12,color:"#374151",marginTop:2,lineHeight:1.4}}>{v}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {curWeek && (
+              <div style={{background:"#fff",borderRadius:12,padding:14,marginBottom:12,border:"2px solid #0f172a"}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
+                  <div>
+                    <div style={{fontSize:10,fontWeight:700,color:"#9ca3af",letterSpacing:"0.06em"}}>THIS WEEK</div>
+                    <div style={{fontSize:15,fontWeight:700,color:"#0f172a",marginTop:1}}>{curWeek.label} · {curWeek.dates}</div>
+                  </div>
+                  <button onClick={()=>toggle(curWeek.id)} style={{padding:"6px 14px",borderRadius:99,border:"none",cursor:"pointer",fontSize:12,fontWeight:700,background:done.has(curWeek.id)?"#10b981":"#0f172a",color:"#fff",whiteSpace:"nowrap"}}>
+                    {done.has(curWeek.id)?"✓ Done":"Mark done"}
+                  </button>
+                </div>
+                <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                  <div style={{background:"#fef2f2",borderRadius:8,padding:"9px 12px",borderLeft:"3px solid #ef4444"}}>
+                    <div style={{fontSize:10,color:"#ef4444",fontWeight:700,marginBottom:3}}>📋 EXAM 5</div>
+                    <div style={{fontSize:12,color:"#374151",lineHeight:1.5}}>{curWeek.e5}</div>
+                  </div>
+                  <div style={{background:"#eff6ff",borderRadius:8,padding:"9px 12px",borderLeft:"3px solid #3b82f6"}}>
+                    <div style={{fontSize:10,color:"#3b82f6",fontWeight:700,marginBottom:3}}>📐 MAS-I</div>
+                    <div style={{fontSize:12,color:"#374151",lineHeight:1.5}}>{curWeek.mas}</div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {nextWeek && nextWeek.id < 19 && (
+              <div style={{background:"#fff",borderRadius:12,padding:14,marginBottom:12,border:"1px solid #e2e8f0"}}>
+                <div style={{fontSize:10,fontWeight:700,color:"#9ca3af",letterSpacing:"0.06em",marginBottom:6}}>UP NEXT</div>
+                <div style={{fontSize:13,fontWeight:700,color:"#374151",marginBottom:8}}>{nextWeek.label} · {nextWeek.dates}</div>
+                <div style={{fontSize:12,color:"#6b7280",marginBottom:4}}><span style={{color:"#ef4444",fontWeight:600}}>E5 → </span>{nextWeek.e5}</div>
+                <div style={{fontSize:12,color:"#6b7280"}}><span style={{color:"#3b82f6",fontWeight:600}}>MAS → </span>{nextWeek.mas}</div>
+              </div>
+            )}
+
+            <div style={{background:"#fffbeb",borderRadius:12,padding:14,marginBottom:12,border:"1px solid #fde68a"}}>
+              <div style={{fontSize:10,fontWeight:700,color:"#d97706",letterSpacing:"0.06em",marginBottom:4}}>⚑ WEEK 8 CHECKPOINT</div>
+              <div style={{fontSize:12,color:"#92400e",lineHeight:1.5}}>After your first Exam 5 mock, reassess. If Ratemaking is still shaky, consider dropping MAS-I and going all-in on Exam 5.</div>
+            </div>
+
+            <div style={{background:"linear-gradient(135deg,#065f46,#0f766e)",borderRadius:12,padding:14,marginBottom:4,color:"#fff"}}>
+              <div style={{fontSize:10,fontWeight:700,color:"#6ee7b7",letterSpacing:"0.06em",marginBottom:4}}>TARGET</div>
+              <div style={{fontSize:14,fontWeight:700}}>🎓 October 2026 Exam Sitting</div>
+              <div style={{fontSize:12,color:"#a7f3d0",marginTop:3}}>Exam 5 (Ratemaking & Reserving) + MAS-I</div>
+            </div>
+          </div>
+        </>}
+
+        {/* ── PLAN ── */}
+        {tab==="plan" && (
+          <div style={{padding:14}}>
+            <div style={{fontSize:17,fontWeight:800,marginBottom:12,color:"#0f172a"}}>Full Study Plan</div>
+            <div style={{display:"flex",gap:6,marginBottom:14}}>
+              {[["All",0],["P1",1],["P2",2],["P3",3]].map(([l,v])=>(
+                <button key={v} onClick={()=>setFilter(v)} style={{padding:"5px 14px",fontSize:12,borderRadius:99,cursor:"pointer",border:"none",fontWeight:filter===v?700:400,background:filter===v?"#0f172a":"#e2e8f0",color:filter===v?"#fff":"#64748b"}}>{l}</button>
+              ))}
+            </div>
+            {filter===0 && (
+              <div style={{display:"flex",flexDirection:"column",gap:4,marginBottom:14}}>
+                {[1,2,3].map(p=>{ const m=PHASE_META[p]; return (
+                  <div key={p} style={{background:m.bg,border:`1px solid ${m.border}`,borderRadius:8,padding:"6px 10px",fontSize:11,display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
+                    <span style={{color:m.color,fontWeight:700}}>{m.label}</span>
+                    <span style={{color:"#9ca3af"}}>·</span>
+                    <span style={{color:"#6b7280"}}>{m.weekday} weekdays · {m.weekend} weekends</span>
+                  </div>
+                );})}
+              </div>
+            )}
+            <div style={{display:"flex",flexDirection:"column",gap:8}}>
+              {WEEKS.filter(w=>filter===0||w.phase===filter).map(w=>{
+                const m=PHASE_META[w.phase], isDone=done.has(w.id), isCur=w.id===curId, isExam=w.id===19;
+                return (
+                  <div key={w.id} onClick={()=>toggle(w.id)} style={{background:"#fff",borderRadius:12,padding:12,cursor:isExam?"default":"pointer",border:isCur?"2px solid #0f172a":isExam?"2px solid #10b981":"1px solid #e2e8f0",opacity:isDone&&!isExam?0.6:1,transition:"opacity 0.2s"}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                      <div style={{display:"flex",alignItems:"center",gap:8}}>
+                        {!isExam && <Checkbox checked={isDone}/>}
+                        <div>
+                          <div style={{fontSize:13,fontWeight:700,color:isExam?"#065f46":"#0f172a",display:"flex",alignItems:"center",gap:5}}>
+                            {isCur && <span style={{fontSize:9,background:"#0f172a",color:"#fff",borderRadius:4,padding:"1px 5px"}}>NOW</span>}
+                            {w.label}
+                          </div>
+                          <div style={{fontSize:11,color:"#94a3b8"}}>{w.dates}{w.hrs>0?` · ${w.hrs}hrs`:""}</div>
+                        </div>
+                      </div>
+                      <div style={{fontSize:10,padding:"2px 8px",borderRadius:99,background:m.bg,color:m.color,border:`1px solid ${m.border}`,fontWeight:700,whiteSpace:"nowrap"}}>{m.label}</div>
+                    </div>
+                    <div style={{display:"flex",flexDirection:"column",gap:4}}>
+                      <div style={{fontSize:12,color:isDone?"#9ca3af":"#374151",textDecoration:isDone?"line-through":"none"}}><span style={{color:"#ef4444",fontWeight:600}}>E5 → </span>{w.e5}</div>
+                      <div style={{fontSize:12,color:isDone?"#9ca3af":"#374151",textDecoration:isDone?"line-through":"none"}}><span style={{color:"#3b82f6",fontWeight:600}}>MAS → </span>{w.mas}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Bottom nav */}
+      <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:480,background:"#fff",borderTop:"1px solid #e2e8f0",display:"flex",height:60,zIndex:10}}>
+        {[{id:"home",icon:"🏠",label:"Home"},{id:"plan",icon:"📅",label:"Plan"}].map(t=>(
+          <button key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2,color:tab===t.id?"#0f172a":"#94a3b8"}}>
+            <span style={{fontSize:20}}>{t.icon}</span>
+            <span style={{fontSize:10,fontWeight:tab===t.id?700:400}}>{t.label}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
