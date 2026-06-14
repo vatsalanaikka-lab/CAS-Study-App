@@ -1,14 +1,31 @@
-import { useState } from "react";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+  <title>CAS Study App</title>
+  <link rel="manifest" href="manifest.json"/>
+  <meta name="theme-color" content="#0f172a"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="CAS Study"/>
+  <style>*{box-sizing:border-box;margin:0;padding:0}body{background:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
+<script type="text/babel">
+const {useState} = React;
 
 const EXAM_DATE = new Date("2026-10-27");
-
 const PHASE_META = {
   1:{label:"Phase 1",desc:"Exam 5 Priority",color:"#ef4444",bg:"#fef2f2",border:"#fecaca",wd:"1hr E5 + 30min MAS-I",we:"2hrs E5 + 1hr MAS-I"},
   2:{label:"Phase 2",desc:"Balanced",color:"#f59e0b",bg:"#fffbeb",border:"#fde68a",wd:"45min each",we:"1.5hrs each"},
   3:{label:"Phase 3",desc:"Mock Exam Focus",color:"#8b5cf6",bg:"#f5f3ff",border:"#ddd6fe",wd:"45min each",we:"1.5hrs each"},
 };
 
-// [label, numDays] starting Jun 14
 const E5_SCHED = [
   ["CA 3.2 — Multivariate Classification: intro & GLM framework",2],
   ["CA 3.2 — diagnostics, consistency test & validation + PS",2],
@@ -32,7 +49,7 @@ const E5_SCHED = [
   ["CA 6.5 — Cape Cod Method: read + PS",1],
   ["CA 6.6 — Frequency-Severity Techniques: read + PS",2],
   ["CA 6.7 — Case Outstanding + CA 7.1 Berquist-Sherman: read + PS",2],
-  ["CA 7.2 — Evaluating Techniques + CA 8.1–8.3 ALAE/ULAE: read + PS",2],
+  ["CA 7.2 — Evaluating Techniques + CA 8.1-8.3 ALAE/ULAE: read + PS",2],
   ["ADAPT: Ratemaking mixed custom quiz + review",4],
   ["ADAPT: Reserving mixed custom quiz + review",4],
   ["ADAPT: Full E5 mock exam #1 (timed) + detailed review",5],
@@ -56,11 +73,10 @@ const E5_SCHED = [
   ["Light review only — no new material",2],
   ["Light review only — rest well",2],
   ["Light review only — sleep early",1],
-  ["🎓 Exam 5 — Oct 27, you've got this!",9],
+  ["Exam 5 — Oct 27, you've got this!",9],
 ];
 
 const MAS_SCHED = [
-  // Section 1: Probability Models (1.0 & 1.1 already done)
   ["CA 1.2 — Insurance Applications: read + assignments",3],
   ["CA 1.3 — Tail Properties of Distributions: read + assignments",3],
   ["CA 1.4 — Poisson Processes: read + assignments",5],
@@ -68,7 +84,6 @@ const MAS_SCHED = [
   ["CA 1.6 — Discrete Markov Chains: read + assignments",5],
   ["CA 1.7 — Life Contingencies: read + assignments",2],
   ["CA 1.8 — Simulation + ADAPT Section 1 quiz",2],
-  // Section 2: Statistics
   ["CA 2.1 — Parameter & Density Estimation: read + assignments",4],
   ["CA 2.2 — Estimator Quality: read + assignments",4],
   ["CA 2.3 — Hypothesis Testing: read + assignments",6],
@@ -76,7 +91,6 @@ const MAS_SCHED = [
   ["CA 2.5 — Goodness of Fit Tests: read + assignments",4],
   ["CA 2.6 — Confidence Intervals: read + assignments",3],
   ["CA 2.7 — Order Statistics + Section 2 review + ADAPT quiz",3],
-  // Section 3: Extended Linear Models
   ["CA 3.1 — Intro to Statistical Learning: read + assignments",2],
   ["CA 3.2 — Simple Linear Regression: read + assignments",5],
   ["CA 3.3 — Multiple Linear Regression: read + assignments",5],
@@ -88,7 +102,6 @@ const MAS_SCHED = [
   ["CA 3.9 — Binomial & Categorical Response: read + assignments",3],
   ["CA 3.10 — Poisson Response Regression: read + assignments",2],
   ["CA 3.11 — GAMs + Section 3 review + ADAPT quiz",3],
-  // ADAPT practice
   ["ADAPT: Section 1 (PM) custom quiz + review",4],
   ["ADAPT: Section 2 (Stats) custom quiz + review",4],
   ["ADAPT: Section 3 (LM) custom quiz + review",4],
@@ -99,7 +112,7 @@ const MAS_SCHED = [
   ["ADAPT: Past papers — mixed",4],
   ["ADAPT: Formula cram + final mock",5],
   ["Light review only — rest well",7],
-  ["🎓 MAS-I — you've got this!",3],
+  ["MAS-I — you've got this!",3],
 ];
 
 function buildPlan(startISO, sched) {
@@ -109,7 +122,7 @@ function buildPlan(startISO, sched) {
   for (let i = 0; i < 145; i++) {
     if (idx >= sched.length) break;
     const date = new Date(y, m-1, d+i);
-    const key = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+    const key = date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');
     map[key] = sched[idx][0];
     used++;
     if (used >= sched[idx][1]) { idx++; used = 0; }
@@ -121,7 +134,7 @@ const E5_PLAN  = buildPlan("2026-06-14", E5_SCHED);
 const MAS_PLAN = buildPlan("2026-06-14", MAS_SCHED);
 
 function localKey(d) {
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
 function getDaysUntil(d) {
   const t = new Date(); t.setHours(0,0,0,0);
@@ -129,66 +142,66 @@ function getDaysUntil(d) {
 }
 
 const WEEKS = [
-  {id:0, start:"2026-06-12",dates:"Jun 12–14",   label:"Kickoff",   phase:1,hrs:7.5,
+  {id:0,start:"2026-06-12",dates:"Jun 12-14",label:"Kickoff",phase:1,hrs:7.5,
    e5:"CA 3.2 — Multivariate Classification: intro, GLM framework & link functions",
    mas:"CA 1.2 — Insurance Applications: read + assignments"},
-  {id:1, start:"2026-06-15",dates:"Jun 15–21",   label:"Week 1",    phase:1,hrs:13.5,
+  {id:1,start:"2026-06-15",dates:"Jun 15-21",label:"Week 1",phase:1,hrs:13.5,
    e5:"CA 3.2 GLM diagnostics & validation · CA 3.3 ILFs & deductibles (A8) · CA 3.1 (A7)",
    mas:"CA 1.2 complete · CA 1.3 Tail Properties · CA 1.4 Poisson Processes"},
-  {id:2, start:"2026-06-22",dates:"Jun 22–28",   label:"Week 2",    phase:1,hrs:13.5,
-   e5:"CA 4.1 Constraints (A6) · CA 4.2 (A9) · CA 1.3 (A1) · CA 2.1–2.3",
+  {id:2,start:"2026-06-22",dates:"Jun 22-28",label:"Week 2",phase:1,hrs:13.5,
+   e5:"CA 4.1 Constraints (A6) · CA 4.2 (A9) · CA 1.3 (A1) · CA 2.1-2.3",
    mas:"CA 1.4 cont · CA 1.5 Reliability Theory · CA 1.6 Discrete Markov Chains"},
-  {id:3, start:"2026-06-29",dates:"Jun 29–Jul 5",label:"Week 3",    phase:1,hrs:13.5,
-   e5:"CA 2.4 Trending · CA 2.5 Expenses · CA 2.6 Rate Indications · CA 5.1–5.2",
+  {id:3,start:"2026-06-29",dates:"Jun 29-Jul 5",label:"Week 3",phase:1,hrs:13.5,
+   e5:"CA 2.4 Trending · CA 2.5 Expenses · CA 2.6 Rate Indications · CA 5.1-5.2",
    mas:"CA 1.6 cont · CA 1.7 Life Contingencies · CA 1.8 Simulation"},
-  {id:4, start:"2026-07-06",dates:"Jul 6–12",    label:"Week 4",    phase:1,hrs:13.5,
+  {id:4,start:"2026-07-06",dates:"Jul 6-12",label:"Week 4",phase:1,hrs:13.5,
    e5:"CA 3.4 Credibility · CA 1.1/1.2 review · ADAPT Ratemaking custom quizzes",
    mas:"CA 1.8 complete · CA 2.1 Parameter & Density Estimation · CA 2.2 Estimator Quality"},
-  {id:5, start:"2026-07-13",dates:"Jul 13–19",   label:"Week 5",    phase:1,hrs:13.5,
+  {id:5,start:"2026-07-13",dates:"Jul 13-19",label:"Week 5",phase:1,hrs:13.5,
    e5:"CA 6.1 Goals of Reserving · CA 6.2 Chain Ladder · CA 6.3 Expected Claims · CA 6.4 BF",
    mas:"CA 2.2 cont · CA 2.3 Hypothesis Testing"},
-  {id:6, start:"2026-07-20",dates:"Jul 20–26",   label:"Week 6",    phase:1,hrs:13.5,
-   e5:"CA 6.5 Cape Cod · CA 6.6 Freq-Sev · CA 6.7 Case Outstanding · CA 7.1–7.2 · CA 8.1–8.3",
+  {id:6,start:"2026-07-20",dates:"Jul 20-26",label:"Week 6",phase:1,hrs:13.5,
+   e5:"CA 6.5 Cape Cod · CA 6.6 Freq-Sev · CA 6.7 Case Outstanding · CA 7.1-7.2 · CA 8.1-8.3",
    mas:"CA 2.3 complete · CA 2.4 Most Powerful Tests · CA 2.5 GOF Tests"},
-  {id:7, start:"2026-07-27",dates:"Jul 27–Aug 2",label:"Week 7",    phase:2,hrs:13.5,
+  {id:7,start:"2026-07-27",dates:"Jul 27-Aug 2",label:"Week 7",phase:2,hrs:13.5,
    e5:"ADAPT: Ratemaking mixed quiz · Reserving mixed quiz · review",
    mas:"CA 2.6 Confidence Intervals · CA 2.7 Order Statistics + review · CA 3.1 start"},
-  {id:8, start:"2026-08-03",dates:"Aug 3–9",     label:"Week 8 ⚑", phase:2,hrs:13.5,
+  {id:8,start:"2026-08-03",dates:"Aug 3-9",label:"Week 8",phase:2,hrs:13.5,
    e5:"ADAPT: Full E5 mock exam #1 (timed) + detailed review",
    mas:"CA 3.1 complete · CA 3.2 Simple Linear Regression · CA 3.3 MLR start"},
-  {id:9, start:"2026-08-10",dates:"Aug 10–16",   label:"Week 9",    phase:2,hrs:13.5,
+  {id:9,start:"2026-08-10",dates:"Aug 10-16",label:"Week 9",phase:2,hrs:13.5,
    e5:"ADAPT: Weak spot targeting from mock #1",
    mas:"CA 3.3 cont · CA 3.4 ANOVA"},
-  {id:10,start:"2026-08-17",dates:"Aug 17–23",   label:"Week 10",   phase:2,hrs:13.5,
+  {id:10,start:"2026-08-17",dates:"Aug 17-23",label:"Week 10",phase:2,hrs:13.5,
    e5:"ADAPT: Ratemaking + Reserving past papers — self-mark vs examiner rubric",
    mas:"CA 3.5 Assumptions · CA 3.6 Model Selection · CA 3.7 Other Regression"},
-  {id:11,start:"2026-08-24",dates:"Aug 24–30",   label:"Week 11",   phase:2,hrs:13.5,
+  {id:11,start:"2026-08-24",dates:"Aug 24-30",label:"Week 11",phase:2,hrs:13.5,
    e5:"ADAPT: Full E5 mock exam #2 (timed) + review + target remaining weak spots",
    mas:"CA 3.7 cont · CA 3.8 Generalized Linear Models"},
-  {id:12,start:"2026-08-31",dates:"Aug 31–Sep 6",label:"Week 12",   phase:2,hrs:13.5,
+  {id:12,start:"2026-08-31",dates:"Aug 31-Sep 6",label:"Week 12",phase:2,hrs:13.5,
    e5:"ADAPT: Full E5 mixed practice + mock exam #3 (timed) + review",
    mas:"CA 3.9 Binomial & Categorical · CA 3.10 Poisson Response · CA 3.11 GAMs + review"},
-  {id:13,start:"2026-09-07",dates:"Sep 7–13",    label:"Week 13",   phase:2,hrs:13.5,
+  {id:13,start:"2026-09-07",dates:"Sep 7-13",label:"Week 13",phase:2,hrs:13.5,
    e5:"ADAPT: Mixed past paper + formula drill + consolidation",
    mas:"CA 3.11 complete · ADAPT: Section 1 (PM) + Section 2 (Stats) custom quizzes"},
-  {id:14,start:"2026-09-14",dates:"Sep 14–20",   label:"Week 14",   phase:3,hrs:13.5,
+  {id:14,start:"2026-09-14",dates:"Sep 14-20",label:"Week 14",phase:3,hrs:13.5,
    e5:"ADAPT: Full mock under exam conditions + review + Ratemaking formula cram",
    mas:"ADAPT: Section 2 cont · Section 3 (LM) quiz · MAS-I mixed practice"},
-  {id:15,start:"2026-09-21",dates:"Sep 21–27",   label:"Week 15",   phase:3,hrs:13.5,
+  {id:15,start:"2026-09-21",dates:"Sep 21-27",label:"Week 15",phase:3,hrs:13.5,
    e5:"ADAPT: Past papers — written justification focus + weak spot targeting",
    mas:"ADAPT: MAS-I mixed cont · mock exam #1 + review"},
-  {id:16,start:"2026-09-28",dates:"Sep 28–Oct 4",label:"Week 16",   phase:3,hrs:13.5,
+  {id:16,start:"2026-09-28",dates:"Sep 28-Oct 4",label:"Week 16",phase:3,hrs:13.5,
    e5:"ADAPT: Full mock + past paper full mixed + self-mark",
    mas:"ADAPT: Weak spot targeting · MAS-I mock exam #2"},
-  {id:17,start:"2026-10-05",dates:"Oct 5–11",    label:"Week 17",   phase:3,hrs:13.5,
+  {id:17,start:"2026-10-05",dates:"Oct 5-11",label:"Week 17",phase:3,hrs:13.5,
    e5:"ADAPT: Final formula cram — Ratemaking + Reserving",
    mas:"ADAPT: Mock #2 cont · Past papers — mixed"},
-  {id:18,start:"2026-10-12",dates:"Oct 12–18",   label:"Week 18",   phase:3,hrs:13.5,
+  {id:18,start:"2026-10-12",dates:"Oct 12-18",label:"Week 18",phase:3,hrs:13.5,
    e5:"Light review only — rest well, sleep early",
    mas:"ADAPT: Formula cram + final mock · Light review"},
-  {id:19,start:"2026-10-19",dates:"Oct 19–27",   label:"Exam Week", phase:3,hrs:0,
-   e5:"🎓 Exam 5 — Oct 27, you've got this!",
-   mas:"🎓 MAS-I — you've got this!"},
+  {id:19,start:"2026-10-19",dates:"Oct 19-27",label:"Exam Week",phase:3,hrs:0,
+   e5:"Exam 5 — Oct 27, you've got this!",
+   mas:"MAS-I — you've got this!"},
 ];
 
 const STUDY_WEEKS = WEEKS.filter(w => w.id < 19);
@@ -208,13 +221,15 @@ function getCurWeekId() {
   return cur;
 }
 
-const Checkbox = ({checked}) => (
-  <div style={{width:20,height:20,borderRadius:5,flexShrink:0,border:`1.5px solid ${checked?"#10b981":"#d1d5db"}`,background:checked?"#10b981":"transparent",display:"flex",alignItems:"center",justifyContent:"center"}}>
-    {checked && <span style={{color:"#fff",fontSize:12,lineHeight:1}}>✓</span>}
-  </div>
-);
+function Checkbox({checked}) {
+  return (
+    <div style={{width:20,height:20,borderRadius:5,flexShrink:0,border:"1.5px solid "+(checked?"#10b981":"#d1d5db"),background:checked?"#10b981":"transparent",display:"flex",alignItems:"center",justifyContent:"center"}}>
+      {checked && <span style={{color:"#fff",fontSize:12,lineHeight:1}}>✓</span>}
+    </div>
+  );
+}
 
-export default function App() {
+function App() {
   const [tab, setTab]       = useState("home");
   const [done, setDone]     = useState(loadDone);
   const [filter, setFilter] = useState(0);
@@ -226,15 +241,14 @@ export default function App() {
   const isWE   = today.getDay() === 0 || today.getDay() === 6;
   const daysLeft = getDaysUntil(EXAM_DATE);
   const curId  = getCurWeekId();
-  const curWeek = WEEKS.find(w => w.id === curId);
+  const curWeek = WEEKS.find(function(w){return w.id===curId;});
   const ph     = curWeek ? PHASE_META[curWeek.phase] : PHASE_META[1];
 
   const todayE5  = E5_PLAN[tKey]   || "";
   const todayMas = MAS_PLAN[tKey]  || "";
   const tomE5    = E5_PLAN[tomKey] || "";
   const tomMas   = MAS_PLAN[tomKey]|| "";
-
-  const loggedHrs = STUDY_WEEKS.filter(w => done.has(w.id)).reduce((s,w) => s+w.hrs, 0);
+  const loggedHrs = STUDY_WEEKS.filter(function(w){return done.has(w.id);}).reduce(function(s,w){return s+w.hrs;}, 0);
   const pct = Math.round(done.size / STUDY_WEEKS.length * 100);
 
   function toggle(id) {
@@ -244,104 +258,101 @@ export default function App() {
     setDone(n); saveDone(n);
   }
 
-  const DAY   = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-  const MON   = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  const todayLabel = `${DAY[today.getDay()]}, ${MON[today.getMonth()]} ${today.getDate()}`;
-  const tomLabel   = `${DAY[tom.getDay()]} ${MON[tom.getMonth()]} ${tom.getDate()}`;
+  const DAY = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const todayLabel = DAY[today.getDay()]+", "+MON[today.getMonth()]+" "+today.getDate();
+  const tomLabel   = DAY[tom.getDay()]+" "+MON[tom.getMonth()]+" "+tom.getDate();
 
   return (
     <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",maxWidth:480,margin:"0 auto",minHeight:"100vh",background:"#f8fafc",display:"flex",flexDirection:"column"}}>
       <div style={{flex:1,overflowY:"auto",paddingBottom:68}}>
 
-        {tab==="home" && <>
-          {/* Hero */}
-          <div style={{background:"linear-gradient(135deg,#0f172a,#1e3a5f)",padding:"28px 20px 22px",color:"#fff"}}>
-            <div style={{fontSize:12,color:"#94a3b8",marginBottom:3}}>Welcome back</div>
-            <div style={{fontSize:22,fontWeight:800,marginBottom:4}}>Hi, Vatsala 👋</div>
-            <div style={{fontSize:11,color:"#34d399",marginBottom:16}}>✅ Full CA access — Exam 5 &amp; MAS-I · until Oct 27</div>
-            <div style={{display:"flex",gap:10,marginBottom:18}}>
-              {[{val:daysLeft,label:"days to exam",color:"#f87171"},{val:`${pct}%`,label:"complete",color:"#34d399"},{val:`${Math.round(loggedHrs)}h`,label:"logged",color:"#60a5fa"}].map(({val,label,color})=>(
-                <div key={label} style={{flex:1,background:"rgba(255,255,255,0.08)",borderRadius:12,padding:"12px 10px",textAlign:"center"}}>
-                  <div style={{fontSize:24,fontWeight:800,color}}>{val}</div>
-                  <div style={{fontSize:11,color:"#94a3b8",marginTop:2}}>{label}</div>
-                </div>
-              ))}
+        {tab==="home" && (
+          <div>
+            <div style={{background:"linear-gradient(135deg,#0f172a,#1e3a5f)",padding:"28px 20px 22px",color:"#fff"}}>
+              <div style={{fontSize:12,color:"#94a3b8",marginBottom:3}}>Welcome back</div>
+              <div style={{fontSize:22,fontWeight:800,marginBottom:4}}>Hi, Vatsala!</div>
+              <div style={{fontSize:11,color:"#34d399",marginBottom:16}}>Full CA access — Exam 5 &amp; MAS-I until Oct 27</div>
+              <div style={{display:"flex",gap:10,marginBottom:18}}>
+                {[{val:daysLeft,label:"days to exam",color:"#f87171"},{val:pct+"%",label:"complete",color:"#34d399"},{val:Math.round(loggedHrs)+"h",label:"logged",color:"#60a5fa"}].map(function(x){return (
+                  <div key={x.label} style={{flex:1,background:"rgba(255,255,255,0.08)",borderRadius:12,padding:"12px 10px",textAlign:"center"}}>
+                    <div style={{fontSize:24,fontWeight:800,color:x.color}}>{x.val}</div>
+                    <div style={{fontSize:11,color:"#94a3b8",marginTop:2}}>{x.label}</div>
+                  </div>
+                );})}
+              </div>
+              <div style={{height:5,background:"rgba(255,255,255,0.15)",borderRadius:99,overflow:"hidden"}}>
+                <div style={{height:"100%",width:pct+"%",background:"linear-gradient(90deg,#34d399,#60a5fa)",borderRadius:99,transition:"width 0.5s"}}/>
+              </div>
+              <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"#475569",marginTop:5}}>
+                <span>{done.size}/{STUDY_WEEKS.length} weeks done</span>
+                <span>{Math.round(TOTAL_HRS-loggedHrs)}hrs remaining</span>
+              </div>
             </div>
-            <div style={{height:5,background:"rgba(255,255,255,0.15)",borderRadius:99,overflow:"hidden"}}>
-              <div style={{height:"100%",width:`${pct}%`,background:"linear-gradient(90deg,#34d399,#60a5fa)",borderRadius:99,transition:"width 0.5s"}}/>
-            </div>
-            <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"#475569",marginTop:5}}>
-              <span>{done.size}/{STUDY_WEEKS.length} weeks done</span>
-              <span>{Math.round(TOTAL_HRS-loggedHrs)}hrs remaining</span>
-            </div>
-          </div>
 
-          <div style={{padding:"14px 14px 0"}}>
-            {/* Today's tasks */}
-            <div style={{background:"#fff",borderRadius:12,padding:14,marginBottom:12,border:"2px solid #0f172a"}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
-                <div>
-                  <div style={{fontSize:10,fontWeight:700,color:"#9ca3af",letterSpacing:"0.06em"}}>TODAY'S STUDY TASKS</div>
-                  <div style={{fontSize:15,fontWeight:700,color:"#0f172a",marginTop:1}}>{todayLabel}</div>
+            <div style={{padding:"14px 14px 0"}}>
+              <div style={{background:"#fff",borderRadius:12,padding:14,marginBottom:12,border:"2px solid #0f172a"}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
+                  <div>
+                    <div style={{fontSize:10,fontWeight:700,color:"#9ca3af",letterSpacing:"0.06em"}}>TODAY'S STUDY TASKS</div>
+                    <div style={{fontSize:15,fontWeight:700,color:"#0f172a",marginTop:1}}>{todayLabel}</div>
+                  </div>
+                  <div style={{background:isWE?"#eff6ff":"#f0fdf4",borderRadius:8,padding:"4px 8px",fontSize:10,fontWeight:700,color:isWE?"#1d4ed8":"#065f46",textAlign:"right",lineHeight:1.6}}>
+                    {isWE?"Weekend":"Weekday"}<br/>{isWE?ph.we:ph.wd}
+                  </div>
                 </div>
-                <div style={{background:isWE?"#eff6ff":"#f0fdf4",borderRadius:8,padding:"4px 8px",fontSize:10,fontWeight:700,color:isWE?"#1d4ed8":"#065f46",textAlign:"right",lineHeight:1.6}}>
-                  {isWE?"Weekend":"Weekday"}<br/>{isWE?ph.we:ph.wd}
+                <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                  <div style={{background:"#fef2f2",borderRadius:8,padding:"9px 12px",borderLeft:"3px solid #ef4444"}}>
+                    <div style={{fontSize:10,color:"#ef4444",fontWeight:700,marginBottom:3}}>EXAM 5 - CA</div>
+                    <div style={{fontSize:13,color:"#111",lineHeight:1.5,fontWeight:500}}>{todayE5}</div>
+                  </div>
+                  <div style={{background:"#eff6ff",borderRadius:8,padding:"9px 12px",borderLeft:"3px solid #3b82f6"}}>
+                    <div style={{fontSize:10,color:"#3b82f6",fontWeight:700,marginBottom:3}}>MAS-I - CA</div>
+                    <div style={{fontSize:13,color:"#111",lineHeight:1.5,fontWeight:500}}>{todayMas}</div>
+                  </div>
                 </div>
+                {curWeek && curWeek.id < 19 && (
+                  <button onClick={function(){toggle(curWeek.id);}} style={{width:"100%",marginTop:10,padding:"8px",borderRadius:8,border:"none",cursor:"pointer",fontSize:12,fontWeight:700,background:done.has(curWeek.id)?"#10b981":"#0f172a",color:"#fff"}}>
+                    {done.has(curWeek.id)?"Week marked complete - tap to undo":"Mark this week complete"}
+                  </button>
+                )}
               </div>
-              <div style={{display:"flex",flexDirection:"column",gap:8}}>
-                <div style={{background:"#fef2f2",borderRadius:8,padding:"9px 12px",borderLeft:"3px solid #ef4444"}}>
-                  <div style={{fontSize:10,color:"#ef4444",fontWeight:700,marginBottom:3}}>📋 EXAM 5 · CA</div>
-                  <div style={{fontSize:13,color:"#111",lineHeight:1.5,fontWeight:500}}>{todayE5}</div>
+
+              {(tomE5||tomMas) && (
+                <div style={{background:"#fff",borderRadius:12,padding:14,marginBottom:12,border:"1px solid #e2e8f0"}}>
+                  <div style={{fontSize:10,fontWeight:700,color:"#9ca3af",letterSpacing:"0.06em",marginBottom:8}}>TOMORROW - {tomLabel}</div>
+                  {tomE5 && <div style={{fontSize:12,color:"#6b7280",marginBottom:4}}><span style={{color:"#ef4444",fontWeight:600}}>E5: </span>{tomE5}</div>}
+                  {tomMas && <div style={{fontSize:12,color:"#6b7280"}}><span style={{color:"#3b82f6",fontWeight:600}}>MAS: </span>{tomMas}</div>}
                 </div>
-                <div style={{background:"#eff6ff",borderRadius:8,padding:"9px 12px",borderLeft:"3px solid #3b82f6"}}>
-                  <div style={{fontSize:10,color:"#3b82f6",fontWeight:700,marginBottom:3}}>📐 MAS-I · CA</div>
-                  <div style={{fontSize:13,color:"#111",lineHeight:1.5,fontWeight:500}}>{todayMas}</div>
-                </div>
-              </div>
-              {curWeek && curWeek.id < 19 && (
-                <button onClick={()=>toggle(curWeek.id)} style={{width:"100%",marginTop:10,padding:"8px",borderRadius:8,border:"none",cursor:"pointer",fontSize:12,fontWeight:700,background:done.has(curWeek.id)?"#10b981":"#0f172a",color:"#fff"}}>
-                  {done.has(curWeek.id)?"✓ Week marked complete":"Mark this week complete"}
-                </button>
               )}
-            </div>
 
-            {/* Tomorrow */}
-            {(tomE5||tomMas) && (
-              <div style={{background:"#fff",borderRadius:12,padding:14,marginBottom:12,border:"1px solid #e2e8f0"}}>
-                <div style={{fontSize:10,fontWeight:700,color:"#9ca3af",letterSpacing:"0.06em",marginBottom:8}}>TOMORROW — {tomLabel}</div>
-                {tomE5 && <div style={{fontSize:12,color:"#6b7280",marginBottom:4}}><span style={{color:"#ef4444",fontWeight:600}}>E5 → </span>{tomE5}</div>}
-                {tomMas && <div style={{fontSize:12,color:"#6b7280"}}><span style={{color:"#3b82f6",fontWeight:600}}>MAS → </span>{tomMas}</div>}
+              <div style={{background:"#fffbeb",borderRadius:12,padding:14,marginBottom:12,border:"1px solid #fde68a"}}>
+                <div style={{fontSize:10,fontWeight:700,color:"#d97706",letterSpacing:"0.06em",marginBottom:4}}>WEEK 8 CHECKPOINT - Aug 3</div>
+                <div style={{fontSize:12,color:"#92400e",lineHeight:1.5}}>After mock #1, if Ratemaking is still shaky, consider dropping MAS-I and going all-in on Exam 5.</div>
               </div>
-            )}
 
-            {/* Checkpoint */}
-            <div style={{background:"#fffbeb",borderRadius:12,padding:14,marginBottom:12,border:"1px solid #fde68a"}}>
-              <div style={{fontSize:10,fontWeight:700,color:"#d97706",letterSpacing:"0.06em",marginBottom:4}}>⚑ WEEK 8 CHECKPOINT — Aug 3</div>
-              <div style={{fontSize:12,color:"#92400e",lineHeight:1.5}}>After mock #1, if Ratemaking is still shaky, consider dropping MAS-I and going all-in on Exam 5.</div>
-            </div>
-
-            {/* Target */}
-            <div style={{background:"linear-gradient(135deg,#065f46,#0f766e)",borderRadius:12,padding:14,marginBottom:4,color:"#fff"}}>
-              <div style={{fontSize:10,fontWeight:700,color:"#6ee7b7",letterSpacing:"0.06em",marginBottom:4}}>TARGET</div>
-              <div style={{fontSize:14,fontWeight:700}}>🎓 October 27, 2026 — Exam Day</div>
-              <div style={{fontSize:12,color:"#a7f3d0",marginTop:3}}>Exam 5 (Ratemaking & Reserving) + MAS-I</div>
+              <div style={{background:"linear-gradient(135deg,#065f46,#0f766e)",borderRadius:12,padding:14,marginBottom:4,color:"#fff"}}>
+                <div style={{fontSize:10,fontWeight:700,color:"#6ee7b7",letterSpacing:"0.06em",marginBottom:4}}>TARGET</div>
+                <div style={{fontSize:14,fontWeight:700}}>October 27, 2026 - Exam Day</div>
+                <div style={{fontSize:12,color:"#a7f3d0",marginTop:3}}>Exam 5 (Ratemaking & Reserving) + MAS-I</div>
+              </div>
             </div>
           </div>
-        </>}
+        )}
 
         {tab==="plan" && (
           <div style={{padding:14}}>
             <div style={{fontSize:17,fontWeight:800,marginBottom:12,color:"#0f172a"}}>Weekly Plan</div>
             <div style={{display:"flex",gap:6,marginBottom:14}}>
-              {[["All",0],["P1",1],["P2",2],["P3",3]].map(([l,v])=>(
-                <button key={v} onClick={()=>setFilter(v)} style={{padding:"5px 14px",fontSize:12,borderRadius:99,cursor:"pointer",border:"none",fontWeight:filter===v?700:400,background:filter===v?"#0f172a":"#e2e8f0",color:filter===v?"#fff":"#64748b"}}>{l}</button>
-              ))}
+              {[["All",0],["P1",1],["P2",2],["P3",3]].map(function(x){return (
+                <button key={x[1]} onClick={function(){setFilter(x[1]);}} style={{padding:"5px 14px",fontSize:12,borderRadius:99,cursor:"pointer",border:"none",fontWeight:filter===x[1]?700:400,background:filter===x[1]?"#0f172a":"#e2e8f0",color:filter===x[1]?"#fff":"#64748b"}}>{x[0]}</button>
+              );})}
             </div>
             <div style={{display:"flex",flexDirection:"column",gap:8}}>
-              {WEEKS.filter(w=>filter===0||w.phase===filter).map(w=>{
+              {WEEKS.filter(function(w){return filter===0||w.phase===filter;}).map(function(w){
                 const m=PHASE_META[w.phase],isDone=done.has(w.id),isCur=w.id===curId,isExam=w.id===19;
                 return (
-                  <div key={w.id} onClick={()=>toggle(w.id)} style={{background:"#fff",borderRadius:12,padding:12,cursor:isExam?"default":"pointer",border:isCur?"2px solid #0f172a":isExam?"2px solid #10b981":"1px solid #e2e8f0",opacity:isDone&&!isExam?0.6:1,transition:"opacity 0.2s"}}>
+                  <div key={w.id} onClick={function(){toggle(w.id);}} style={{background:"#fff",borderRadius:12,padding:12,cursor:isExam?"default":"pointer",border:isCur?"2px solid #0f172a":isExam?"2px solid #10b981":"1px solid #e2e8f0",opacity:isDone&&!isExam?0.6:1,transition:"opacity 0.2s"}}>
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
                       <div style={{display:"flex",alignItems:"center",gap:8}}>
                         {!isExam && <Checkbox checked={isDone}/>}
@@ -350,14 +361,14 @@ export default function App() {
                             {isCur && <span style={{fontSize:9,background:"#0f172a",color:"#fff",borderRadius:4,padding:"1px 5px"}}>NOW</span>}
                             {w.label}
                           </div>
-                          <div style={{fontSize:11,color:"#94a3b8"}}>{w.dates}{w.hrs>0?` · ${w.hrs}hrs`:""}</div>
+                          <div style={{fontSize:11,color:"#94a3b8"}}>{w.dates}{w.hrs>0?" - "+w.hrs+"hrs":""}</div>
                         </div>
                       </div>
-                      <div style={{fontSize:10,padding:"2px 8px",borderRadius:99,background:m.bg,color:m.color,border:`1px solid ${m.border}`,fontWeight:700,whiteSpace:"nowrap"}}>{m.label}</div>
+                      <div style={{fontSize:10,padding:"2px 8px",borderRadius:99,background:m.bg,color:m.color,border:"1px solid "+m.border,fontWeight:700,whiteSpace:"nowrap"}}>{m.label}</div>
                     </div>
                     <div style={{display:"flex",flexDirection:"column",gap:4}}>
-                      <div style={{fontSize:12,color:isDone?"#9ca3af":"#374151",textDecoration:isDone?"line-through":"none"}}><span style={{color:"#ef4444",fontWeight:600}}>E5 → </span>{w.e5}</div>
-                      <div style={{fontSize:12,color:isDone?"#9ca3af":"#374151",textDecoration:isDone?"line-through":"none"}}><span style={{color:"#3b82f6",fontWeight:600}}>MAS → </span>{w.mas}</div>
+                      <div style={{fontSize:12,color:isDone?"#9ca3af":"#374151",textDecoration:isDone?"line-through":"none"}}><span style={{color:"#ef4444",fontWeight:600}}>E5: </span>{w.e5}</div>
+                      <div style={{fontSize:12,color:isDone?"#9ca3af":"#374151",textDecoration:isDone?"line-through":"none"}}><span style={{color:"#3b82f6",fontWeight:600}}>MAS: </span>{w.mas}</div>
                     </div>
                   </div>
                 );
@@ -368,13 +379,17 @@ export default function App() {
       </div>
 
       <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:480,background:"#fff",borderTop:"1px solid #e2e8f0",display:"flex",height:60,zIndex:10}}>
-        {[{id:"home",icon:"🏠",label:"Home"},{id:"plan",icon:"📅",label:"Plan"}].map(t=>(
-          <button key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2,color:tab===t.id?"#0f172a":"#94a3b8"}}>
-            <span style={{fontSize:20}}>{t.icon}</span>
+        {[{id:"home",icon:"H",label:"Home"},{id:"plan",icon:"P",label:"Plan"}].map(function(t){return (
+          <button key={t.id} onClick={function(){setTab(t.id);}} style={{flex:1,background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2,color:tab===t.id?"#0f172a":"#94a3b8"}}>
             <span style={{fontSize:10,fontWeight:tab===t.id?700:400}}>{t.label}</span>
           </button>
-        ))}
+        );})}
       </div>
     </div>
   );
 }
+
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+</script>
+</body>
+</html>
