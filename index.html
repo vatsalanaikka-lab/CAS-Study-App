@@ -19,194 +19,109 @@
 <script type="text/babel">
 const {useState} = React;
 
-const EXAM_DATE = new Date("2026-10-27");
-const PHASE_META = {
-  1:{label:"Phase 1",desc:"Exam 5 Priority",color:"#ef4444",bg:"#fef2f2",border:"#fecaca",wd:"1hr E5 + 30min MAS-I",we:"2hrs E5 + 1hr MAS-I"},
-  2:{label:"Phase 2",desc:"Balanced",color:"#f59e0b",bg:"#fffbeb",border:"#fde68a",wd:"45min each",we:"1.5hrs each"},
-  3:{label:"Phase 3",desc:"Mock Exam Focus",color:"#8b5cf6",bg:"#f5f3ff",border:"#ddd6fe",wd:"45min each",we:"1.5hrs each"},
-};
+const E5_EXAM  = new Date("2026-10-27");
+const MAS_EXAM = new Date("2026-11-05");
 
-const E5_SCHED = [
-  ["CA 3.2 - Multivariate Classification: intro & GLM framework",2],
-  ["CA 3.2 - diagnostics, consistency test & validation + PS",2],
-  ["CA 3.3 - Special Classifications: ILFs & deductible relativities",2],
-  ["CA 3.3 - problem set + ADAPT A8 custom quiz",2],
-  ["CA 3.1 - Traditional Risk Classification (A7): read + PS",2],
-  ["CA 4.1 - Constraints & Considerations (A6): read + PS",2],
-  ["CA 4.2 - Finalizing Rates (A9) + CA 1.3 Insurance Data (A1)",1],
-  ["CA 2.1 - Addressing Anomalies: read + PS",2],
-  ["CA 2.2 - Rate & Benefit Changes + CA 2.3 Development: read + PS",2],
-  ["CA 2.4 - Trending: read + PS",2],
-  ["CA 2.5 - Expenses & Profit + CA 2.6 Rate Indications: read + PS",2],
-  ["CA 5.1 - Claims-Made + CA 5.2 Commercial Lines: read + PS",2],
-  ["CA 3.4 - Credibility + CA 1.1/1.2 quick review",2],
-  ["ADAPT: Ratemaking custom quiz - A8, A6, A7 focus",1],
-  ["ADAPT: Ratemaking custom quiz - A1-A5 focus",1],
-  ["CA 6.1 - Goals of Reserving + CA 6.2 Chain Ladder: read",2],
-  ["CA 6.2 - Chain Ladder problem set",1],
-  ["CA 6.3 - Expected Claims Method: read + PS",1],
-  ["CA 6.4 - BF & Benktander Methods: read + PS",2],
-  ["CA 6.5 - Cape Cod Method: read + PS",1],
-  ["CA 6.6 - Frequency-Severity Techniques: read + PS",2],
-  ["CA 6.7 - Case Outstanding + CA 7.1 Berquist-Sherman: read + PS",2],
-  ["CA 7.2 - Evaluating Techniques + CA 8.1-8.3 ALAE/ULAE: read + PS",2],
-  ["ADAPT: Ratemaking mixed custom quiz + review",4],
-  ["ADAPT: Reserving mixed custom quiz + review",4],
-  ["ADAPT: Full E5 mock exam #1 (timed) + detailed review",5],
-  ["ADAPT: Weak spot targeting from mock #1",4],
-  ["ADAPT: Ratemaking past paper - self-mark vs examiner rubric",4],
-  ["ADAPT: Reserving past paper - self-mark vs examiner rubric",4],
-  ["ADAPT: Full E5 mock exam #2 (timed) + review",5],
-  ["ADAPT: Target remaining weak spots",4],
-  ["ADAPT: Full E5 mixed practice - all sections",4],
-  ["ADAPT: Full E5 mock exam #3 (timed) + review",5],
-  ["ADAPT: Mixed past paper + formula drill",4],
-  ["ADAPT: Formula cram + consolidation",4],
-  ["ADAPT: Full mock under exam conditions",4],
-  ["ADAPT: Mock review + Ratemaking formula cram",4],
-  ["ADAPT: Past papers - written justification focus",5],
-  ["ADAPT: Weak spot targeting from past papers",4],
-  ["ADAPT: Full mock + review",4],
-  ["ADAPT: Past paper - full mixed + self-mark",4],
-  ["ADAPT: Final formula cram - Ratemaking",3],
-  ["ADAPT: Final formula cram - Reserving",3],
-  ["Light review only - no new material",2],
-  ["Light review only - rest well",2],
-  ["Light review only - sleep early",1],
-  ["Exam 5 - Oct 27, you've got this!",9],
-];
+const DAY_EXCEPTIONS = { "2026-06-21": "mas" };
 
-const MAS_SCHED = [
-  ["CA 1.2 - Insurance Applications: read + assignments",3],
-  ["CA 1.3 - Tail Properties of Distributions: read + assignments",3],
-  ["CA 1.4 - Poisson Processes: read + assignments",5],
-  ["CA 1.5 - Reliability Theory: read + assignments",3],
-  ["CA 1.6 - Discrete Markov Chains: read + assignments",5],
-  ["CA 1.7 - Life Contingencies: read + assignments",2],
-  ["CA 1.8 - Simulation + ADAPT Section 1 quiz",2],
-  ["CA 2.1 - Parameter & Density Estimation: read + assignments",4],
-  ["CA 2.2 - Estimator Quality: read + assignments",4],
-  ["CA 2.3 - Hypothesis Testing: read + assignments",6],
-  ["CA 2.4 - Most Powerful Tests: read + assignments",2],
-  ["CA 2.5 - Goodness of Fit Tests: read + assignments",4],
-  ["CA 2.6 - Confidence Intervals: read + assignments",3],
-  ["CA 2.7 - Order Statistics + Section 2 review + ADAPT quiz",3],
-  ["CA 3.1 - Intro to Statistical Learning: read + assignments",2],
-  ["CA 3.2 - Simple Linear Regression: read + assignments",5],
-  ["CA 3.3 - Multiple Linear Regression: read + assignments",5],
-  ["CA 3.4 - ANOVA: read + assignments",3],
-  ["CA 3.5 - Linear Model Assumptions: read + assignments",3],
-  ["CA 3.6 - Model Selection: read + assignments",3],
-  ["CA 3.7 - Other Regression Approaches: read + assignments",3],
-  ["CA 3.8 - Generalized Linear Models: read + assignments",5],
-  ["CA 3.9 - Binomial & Categorical Response: read + assignments",3],
-  ["CA 3.10 - Poisson Response Regression: read + assignments",2],
-  ["CA 3.11 - GAMs + Section 3 review + ADAPT quiz",3],
-  ["ADAPT: Section 1 (PM) custom quiz + review",4],
-  ["ADAPT: Section 2 (Stats) custom quiz + review",4],
-  ["ADAPT: Section 3 (LM) custom quiz + review",4],
-  ["ADAPT: MAS-I mixed practice - all sections",4],
-  ["ADAPT: MAS-I mock exam #1 + review",5],
-  ["ADAPT: Weak spot targeting",4],
-  ["ADAPT: MAS-I mock exam #2 + review",6],
-  ["ADAPT: Past papers - mixed",4],
-  ["ADAPT: Formula cram + final mock",5],
-  ["Light review only - rest well",7],
-  ["MAS-I - you've got this!",3],
-];
-
-function buildPlan(startISO, sched) {
-  const [y,m,d] = startISO.split('-').map(Number);
-  const map = {};
-  let idx = 0, used = 0;
-  for (let i = 0; i < 145; i++) {
-    if (idx >= sched.length) break;
-    const date = new Date(y, m-1, d+i);
-    const key = date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');
-    map[key] = sched[idx][0];
-    used++;
-    if (used >= sched[idx][1]) { idx++; used = 0; }
-  }
-  return map;
+function examForDay(dow) {
+  if (dow===1||dow===3||dow===5||dow===6) return "mas";
+  if (dow===2||dow===4||dow===0) return "e5";
+  return null;
+}
+function examForDate(date) {
+  const k = localKey(date);
+  if (DAY_EXCEPTIONS[k]) return DAY_EXCEPTIONS[k];
+  return examForDay(date.getDay());
 }
 
-const E5_PLAN  = buildPlan("2026-06-14", E5_SCHED);
-const MAS_PLAN = buildPlan("2026-06-14", MAS_SCHED);
-
-const WEEKS = [
-  {id:0,start:"2026-06-12",phase:1,hrs:1.5,
-   e5:"CA 3.2 - Multivariate Classification: intro, GLM framework & link functions",
-   mas:"CA 1.2 - Insurance Applications: read + assignments"},
-  {id:1,start:"2026-06-15",phase:1,hrs:13.5,
-   e5:"CA 3.2 GLM diagnostics & validation / CA 3.3 ILFs & deductibles (A8) / CA 3.1 (A7)",
-   mas:"CA 1.2 complete / CA 1.3 Tail Properties / CA 1.4 Poisson Processes"},
-  {id:2,start:"2026-06-22",phase:1,hrs:13.5,
-   e5:"CA 4.1 Constraints (A6) / CA 4.2 (A9) / CA 1.3 (A1) / CA 2.1-2.3",
-   mas:"CA 1.4 cont / CA 1.5 Reliability Theory / CA 1.6 Discrete Markov Chains"},
-  {id:3,start:"2026-06-29",phase:1,hrs:13.5,
-   e5:"CA 2.4 Trending / CA 2.5 Expenses / CA 2.6 Rate Indications / CA 5.1-5.2",
-   mas:"CA 1.6 cont / CA 1.7 Life Contingencies / CA 1.8 Simulation"},
-  {id:4,start:"2026-07-06",phase:1,hrs:13.5,
-   e5:"CA 3.4 Credibility / CA 1.1/1.2 review / ADAPT Ratemaking custom quizzes",
-   mas:"CA 1.8 complete / CA 2.1 Parameter & Density Estimation / CA 2.2 Estimator Quality"},
-  {id:5,start:"2026-07-13",phase:1,hrs:13.5,
-   e5:"CA 6.1 Goals of Reserving / CA 6.2 Chain Ladder / CA 6.3 Expected Claims / CA 6.4 BF",
-   mas:"CA 2.2 cont / CA 2.3 Hypothesis Testing"},
-  {id:6,start:"2026-07-20",phase:1,hrs:13.5,
-   e5:"CA 6.5 Cape Cod / CA 6.6 Freq-Sev / CA 6.7 Case Outstanding / CA 7.1-7.2 / CA 8.1-8.3",
-   mas:"CA 2.3 complete / CA 2.4 Most Powerful Tests / CA 2.5 GOF Tests"},
-  {id:7,start:"2026-07-27",phase:2,hrs:13.5,
-   e5:"ADAPT: Ratemaking mixed quiz / Reserving mixed quiz / review",
-   mas:"CA 2.6 Confidence Intervals / CA 2.7 Order Statistics + review / CA 3.1 start"},
-  {id:8,start:"2026-08-03",phase:2,hrs:13.5,
-   e5:"ADAPT: Full E5 mock exam #1 (timed) + detailed review",
-   mas:"CA 3.1 complete / CA 3.2 Simple Linear Regression / CA 3.3 MLR start"},
-  {id:9,start:"2026-08-10",phase:2,hrs:13.5,
-   e5:"ADAPT: Weak spot targeting from mock #1",
-   mas:"CA 3.3 cont / CA 3.4 ANOVA"},
-  {id:10,start:"2026-08-17",phase:2,hrs:13.5,
-   e5:"ADAPT: Ratemaking + Reserving past papers - self-mark vs examiner rubric",
-   mas:"CA 3.5 Assumptions / CA 3.6 Model Selection / CA 3.7 Other Regression"},
-  {id:11,start:"2026-08-24",phase:2,hrs:13.5,
-   e5:"ADAPT: Full E5 mock exam #2 (timed) + review + target remaining weak spots",
-   mas:"CA 3.7 cont / CA 3.8 Generalized Linear Models"},
-  {id:12,start:"2026-08-31",phase:2,hrs:13.5,
-   e5:"ADAPT: Full E5 mixed practice + mock exam #3 (timed) + review",
-   mas:"CA 3.9 Binomial & Categorical / CA 3.10 Poisson Response / CA 3.11 GAMs + review"},
-  {id:13,start:"2026-09-07",phase:2,hrs:13.5,
-   e5:"ADAPT: Mixed past paper + formula drill + consolidation",
-   mas:"CA 3.11 complete / ADAPT: Section 1 (PM) + Section 2 (Stats) custom quizzes"},
-  {id:14,start:"2026-09-14",phase:3,hrs:13.5,
-   e5:"ADAPT: Full mock under exam conditions + review + Ratemaking formula cram",
-   mas:"ADAPT: Section 2 cont / Section 3 (LM) quiz / MAS-I mixed practice"},
-  {id:15,start:"2026-09-21",phase:3,hrs:13.5,
-   e5:"ADAPT: Past papers - written justification focus + weak spot targeting",
-   mas:"ADAPT: MAS-I mixed cont / mock exam #1 + review"},
-  {id:16,start:"2026-09-28",phase:3,hrs:13.5,
-   e5:"ADAPT: Full mock + past paper full mixed + self-mark",
-   mas:"ADAPT: Weak spot targeting / MAS-I mock exam #2"},
-  {id:17,start:"2026-10-05",phase:3,hrs:13.5,
-   e5:"ADAPT: Final formula cram - Ratemaking + Reserving",
-   mas:"ADAPT: Mock #2 cont / Past papers - mixed"},
-  {id:18,start:"2026-10-12",phase:3,hrs:13.5,
-   e5:"Light review only - rest well, sleep early",
-   mas:"ADAPT: Formula cram + final mock / Light review"},
-  {id:19,start:"2026-10-19",phase:3,hrs:0,
-   e5:"Exam 5 - Oct 27, you've got this!",
-   mas:"MAS-I - you've got this!"},
+const E5_SECTIONS = [
+  ["CA 3.1 - Traditional Risk Classification",2],
+  ["CA 3.2 - Multivariate Classification (weak area)",3],
+  ["CA 3.3 - Special Classification (weak area)",2],
+  ["CA 3.4 - Credibility",1],
+  ["CA 4.1 - Constraints and Considerations",1],
+  ["CA 4.2 - Finalizing Rates",1],
+  ["CA 5.1 - Claims-Made Policies",1],
+  ["CA 5.2 - Commercial Lines Rating Mechanisms",1],
+  ["CA 2.1 - Addressing Anomalies in Loss Data",1],
+  ["CA 2.2 - Rate and Benefit Changes",2],
+  ["CA 2.3 - Development",1],
+  ["CA 2.4 - Trending",1],
+  ["CA 2.5 - Expenses and Profit",2],
+  ["CA 2.6 - Overall Rate Level Indications",1],
+  ["CA 1.3 - Understanding Insurance Data (A1)",1],
+  ["ADAPT: Reserving 6.1-6.2 - learn via practice Q's (Chain Ladder)",2],
+  ["ADAPT: Reserving 6.3-6.5 - learn via practice Q's (Exp Claims, BF, Cape Cod)",2],
+  ["ADAPT: Reserving 6.6-6.7 - learn via practice Q's (Freq-Sev, Case O/S)",2],
+  ["ADAPT: Reserving 7.1-7.2 - learn via practice Q's (Berquist-Sherman, Eval)",2],
+  ["ADAPT: Reserving 8.1-8.3 - learn via practice Q's (Recoveries, ALAE, ULAE)",2],
+  ["ADAPT: Ratemaking custom quizzes (A8/A6/A7 focus)",3],
+  ["ADAPT: Reserving mixed custom quizzes",2],
+  ["ADAPT: Full E5 mock exam #1 + review",3],
+  ["ADAPT: Weak spot targeting from mock #1",2],
+  ["ADAPT: Ratemaking past papers + self-mark",3],
+  ["ADAPT: Reserving past papers + self-mark",3],
+  ["ADAPT: Full E5 mock exam #2 + review",3],
+  ["ADAPT: Target remaining weak spots",2],
+  ["ADAPT: Full E5 mock exam #3 + review",3],
+  ["ADAPT: Mixed past papers + formula drill",3],
+  ["ADAPT: Full mock under exam conditions",2],
+  ["ADAPT: Written justification practice",2],
+  ["ADAPT: Final formula cram - Ratemaking + Reserving",2],
+  ["Light review only - rest well, sleep early",2],
+  ["Exam 5 - Oct 27, you've got this!",1],
 ];
 
-const STUDY_WEEKS = WEEKS.filter(w => w.id < 19);
-const TOTAL_HRS   = STUDY_WEEKS.reduce((s,w) => s+w.hrs, 0);
-const MN = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-const DAY = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const MAS_SECTIONS = [
+  ["CA 1.0 - Basics",0],
+  ["CA 1.1 - Claim Severity Distributions",0],
+  ["CA 1.2 - Insurance Applications",0],
+  ["CA 1.3 - Tail Properties of Distributions",1],
+  ["CA 1.4 - Poisson Processes",3],
+  ["CA 1.5 - Reliability Theory",2],
+  ["CA 1.6 - Discrete Markov Chains",2],
+  ["CA 1.7 - Life Contingencies",2],
+  ["CA 1.8 - Simulation",1],
+  ["CA 2.1 - Parameter and Density Estimation",2],
+  ["CA 2.2 - Estimator Quality",3],
+  ["CA 2.3 - Hypothesis Testing",3],
+  ["CA 2.4 - Most Powerful Tests",1],
+  ["CA 2.5 - Goodness of Fit Tests",2],
+  ["CA 2.6 - Confidence Intervals",2],
+  ["CA 2.7 - Order Statistics",1],
+  ["CA 3.1 - Introduction to Statistical Learning",1],
+  ["CA 3.2 - Simple Linear Regression",3],
+  ["CA 3.3 - Multiple Linear Regression",2],
+  ["CA 3.4 - ANOVA",2],
+  ["CA 3.5 - Linear Model Assumptions",2],
+  ["CA 3.6 - Model Selection",1],
+  ["CA 3.7 - Other Linear Regression Approaches",2],
+  ["CA 3.8 - Generalized Linear Models",3],
+  ["CA 3.9 - Binomial & Categorical Response Regression",1],
+  ["CA 3.10 - Poisson Response Regression",1],
+  ["CA 3.11 - Generalized Additive Models",1],
+  ["ADAPT: Section 1 (PM) custom quiz + review",2],
+  ["ADAPT: Section 2 (Stats) custom quiz + review",2],
+  ["ADAPT: Section 3 (LM) custom quiz + review",2],
+  ["ADAPT: MAS-I mixed practice - all sections",2],
+  ["ADAPT: MAS-I mock exam #1 + review",3],
+  ["ADAPT: Weak spot targeting",2],
+  ["ADAPT: MAS-I mock exam #2 + review",3],
+  ["ADAPT: Past papers - mixed",2],
+  ["ADAPT: Formula cram + final mock",3],
+  ["Light review only - rest well",2],
+  ["MAS-I - Nov 5, you've got this!",1],
+];
+
+const MAS_START = new Date("2026-06-21");
+const E5_START  = (function(){ const t=new Date(); t.setHours(0,0,0,0); return t; })();
 
 function localKey(d) {
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
 function shiftKey(date, days) {
-  const d = new Date(date.getTime() + days*86400000);
-  return localKey(d);
+  return localKey(new Date(date.getTime() + days*86400000));
 }
 function getDaysUntil(d) {
   const t = new Date(); t.setHours(0,0,0,0);
@@ -214,83 +129,93 @@ function getDaysUntil(d) {
 }
 function offsetLabel(n) {
   if (n===0) return "On track";
-  return Math.abs(n)+" day"+(Math.abs(n)>1?"s":"")+" "+(n<0?"behind":"ahead");
+  return Math.abs(n)+" session"+(Math.abs(n)>1?"s":"")+" "+(n<0?"behind":"ahead");
 }
-function adjustedDates(w, offset) {
-  const s = new Date(w.start); s.setDate(s.getDate()+offset);
-  const nw = WEEKS.find(x => x.id===w.id+1);
-  const e = nw ? new Date(nw.start) : new Date("2026-10-28");
-  e.setDate(e.getDate()+offset-1);
-  const sm=MN[s.getMonth()], sd=s.getDate(), em=MN[e.getMonth()], ed=e.getDate();
-  return sm===em ? `${sm} ${sd}-${ed}` : `${sm} ${sd}-${em} ${ed}`;
+function buildExamPlan(sections, examKey, startDate) {
+  const map = {};
+  let secIdx = 0, sessUsed = 0;
+  while (secIdx < sections.length && sections[secIdx][1] === 0) secIdx++;
+  const d = new Date(startDate);
+  for (let i = 0; i < 250 && secIdx < sections.length; i++) {
+    const day = new Date(d.getTime() + i*86400000);
+    if (examForDate(day) === examKey) {
+      map[localKey(day)] = { label: sections[secIdx][0], idx: secIdx };
+      if (++sessUsed >= sections[secIdx][1]) {
+        secIdx++; sessUsed = 0;
+        while (secIdx < sections.length && sections[secIdx][1] === 0) secIdx++;
+      }
+    }
+  }
+  return map;
 }
-function getCurWeekId(offset) {
-  const t = new Date(); t.setHours(0,0,0,0);
-  const eff = new Date(t.getTime()+(offset||0)*86400000);
-  let cur = 0;
-  for (const w of WEEKS) { if (eff >= new Date(w.start)) cur = w.id; }
-  return cur;
-}
+
+const E5_PLAN  = buildExamPlan(E5_SECTIONS, "e5", E5_START);
+const MAS_PLAN = buildExamPlan(MAS_SECTIONS, "mas", MAS_START);
+
+const MN = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const DN = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
 function loadDone() {
-  try { const s=localStorage.getItem("cas_v3"); return s?new Set(JSON.parse(s)):new Set(); }
-  catch(e) { return new Set(); }
+  try { const s=localStorage.getItem("cas_v4"); return s?JSON.parse(s):{e5:[],mas:[0,1,2]}; }
+  catch(e) { return {e5:[],mas:[0,1,2]}; }
 }
-function saveDone(s) {
-  try { localStorage.setItem("cas_v3", JSON.stringify([...s])); } catch(e) {}
-}
+function saveDone(o) { try{localStorage.setItem("cas_v4",JSON.stringify(o));}catch(e){} }
 function loadOffsets() {
-  try { const s=localStorage.getItem("cas_offsets"); return s?JSON.parse(s):{e5:0,mas:0}; }
+  try { const s=localStorage.getItem("cas_off4"); return s?JSON.parse(s):{e5:0,mas:0}; }
   catch(e) { return {e5:0,mas:0}; }
 }
-function saveOffsets(o) {
-  try { localStorage.setItem("cas_offsets", JSON.stringify(o)); } catch(e) {}
-}
-
-function Checkbox({checked}) {
-  return (
-    <div style={{width:20,height:20,borderRadius:5,flexShrink:0,border:"1.5px solid "+(checked?"#10b981":"#d1d5db"),background:checked?"#10b981":"transparent",display:"flex",alignItems:"center",justifyContent:"center"}}>
-      {checked && <span style={{color:"#fff",fontSize:12,lineHeight:1}}>✓</span>}
-    </div>
-  );
-}
+function saveOffsets(o) { try{localStorage.setItem("cas_off4",JSON.stringify(o));}catch(e){} }
 
 function App() {
-  const [tab, setTab]         = useState("home");
-  const [done, setDone]       = useState(loadDone);
-  const [offsets, setOffsets] = useState(loadOffsets);
-  const [filter, setFilter]   = useState(0);
+  const [tab, setTab]           = useState("home");
+  const [doneObj, setDoneObj]   = useState(loadDone);
+  const [offsets, setOffsets]   = useState(loadOffsets);
+  const [planExam, setPlanExam] = useState("mas");
 
-  const today    = new Date();
-  const tom      = new Date(today.getTime()+86400000);
-  const isWE     = today.getDay()===0||today.getDay()===6;
-  const daysLeft = getDaysUntil(EXAM_DATE);
-  const curId    = getCurWeekId(offsets.e5);
-  const curWeek  = WEEKS.find(w => w.id===curId);
-  const ph       = curWeek ? PHASE_META[curWeek.phase] : PHASE_META[1];
+  const done = { e5:new Set(doneObj.e5), mas:new Set(doneObj.mas) };
 
-  const todayE5  = E5_PLAN[shiftKey(today, offsets.e5)]  || "";
-  const todayMas = MAS_PLAN[shiftKey(today, offsets.mas)] || "";
-  const tomE5    = E5_PLAN[shiftKey(tom, offsets.e5)]    || "";
-  const tomMas   = MAS_PLAN[shiftKey(tom, offsets.mas)]  || "";
+  const today = new Date();
+  const tom   = new Date(today.getTime()+86400000);
+  const e5Left  = getDaysUntil(E5_EXAM);
+  const masLeft = getDaysUntil(MAS_EXAM);
 
-  const loggedHrs = STUDY_WEEKS.filter(w => done.has(w.id)).reduce((s,w) => s+w.hrs, 0);
-  const pct = Math.round(done.size/STUDY_WEEKS.length*100);
+  const todayDow  = today.getDay();
+  const todayExam = examForDate(today);
+  const tomExam   = examForDate(tom);
 
-  const todayLabel = DAY[today.getDay()]+", "+MN[today.getMonth()]+" "+today.getDate();
-  const tomLabel   = DAY[tom.getDay()]+" "+MN[tom.getMonth()]+" "+tom.getDate();
+  const todayTask = todayExam==="e5"  ? E5_PLAN[shiftKey(today, offsets.e5)]
+                  : todayExam==="mas" ? MAS_PLAN[shiftKey(today, offsets.mas)]
+                  : null;
+  const tomTask   = tomExam==="e5"  ? E5_PLAN[shiftKey(tom, offsets.e5)]
+                  : tomExam==="mas" ? MAS_PLAN[shiftKey(tom, offsets.mas)]
+                  : null;
 
-  function toggle(id) {
-    if (id===19) return;
-    const n = new Set(done);
-    n.has(id) ? n.delete(id) : n.add(id);
-    setDone(n); saveDone(n);
+  const isWE = todayDow===0||todayDow===6;
+  const todayLabel = DN[todayDow]+", "+MN[today.getMonth()]+" "+today.getDate();
+  const tomLabel   = DN[tom.getDay()]+" "+MN[tom.getMonth()]+" "+tom.getDate();
+
+  const e5Pct  = Math.round(done.e5.size  / E5_SECTIONS.length  * 100);
+  const masPct = Math.round(done.mas.size / MAS_SECTIONS.length * 100);
+
+  function toggleSection(exam, idx) {
+    const arr = new Set(doneObj[exam]);
+    arr.has(idx) ? arr.delete(idx) : arr.add(idx);
+    const n = Object.assign({}, doneObj); n[exam]=[...arr];
+    setDoneObj(n); saveDone(n);
   }
   function adjust(exam, delta) {
-    const n = {...offsets, [exam]: offsets[exam]+delta};
+    const n = Object.assign({}, offsets); n[exam]=offsets[exam]+delta;
     setOffsets(n); saveOffsets(n);
   }
 
-  const adjBtn = {width:32,height:32,borderRadius:8,border:"1px solid #e2e8f0",background:"#f8fafc",cursor:"pointer",fontSize:16,fontWeight:700,color:"#374151"};
+  const adjBtn = {width:30,height:30,borderRadius:8,border:"1px solid #e2e8f0",background:"#f8fafc",cursor:"pointer",fontSize:15,fontWeight:700,color:"#374151"};
+  const EX = {e5:{name:"Exam 5",color:"#ef4444",bg:"#fef2f2",border:"#fecaca",emoji:"E5"},
+              mas:{name:"MAS-I",color:"#3b82f6",bg:"#eff6ff",border:"#bfdbfe",emoji:"MAS"}};
+
+  const planSections = planExam==="e5" ? E5_SECTIONS : MAS_SECTIONS;
+  const planMap      = planExam==="e5" ? E5_PLAN : MAS_PLAN;
+  const planDates = {};
+  Object.keys(planMap).forEach(function(k){ const v=planMap[k]; if (planDates[v.idx]===undefined) planDates[v.idx]=k; });
 
   return (
     <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",maxWidth:480,margin:"0 auto",minHeight:"100vh",background:"#f8fafc",display:"flex",flexDirection:"column"}}>
@@ -298,94 +223,84 @@ function App() {
 
         {tab==="home" && (
           <div>
-            {/* Hero */}
-            <div style={{background:"linear-gradient(135deg,#0f172a,#1e3a5f)",padding:"28px 20px 22px",color:"#fff"}}>
+            <div style={{background:"linear-gradient(135deg,#0f172a,#1e3a5f)",padding:"24px 20px 20px",color:"#fff"}}>
               <div style={{fontSize:12,color:"#94a3b8",marginBottom:3}}>Welcome back</div>
-              <div style={{fontSize:22,fontWeight:800,marginBottom:4}}>Hi, Vatsala!</div>
-              <div style={{fontSize:11,color:"#34d399",marginBottom:16}}>Full CA access - Exam 5 &amp; MAS-I until Oct 27</div>
-              <div style={{display:"flex",gap:10,marginBottom:18}}>
-                {[{val:daysLeft,label:"days to exam",color:"#f87171"},{val:pct+"%",label:"complete",color:"#34d399"},{val:Math.round(loggedHrs)+"h",label:"logged",color:"#60a5fa"}].map(x=>(
-                  <div key={x.label} style={{flex:1,background:"rgba(255,255,255,0.08)",borderRadius:12,padding:"12px 10px",textAlign:"center"}}>
-                    <div style={{fontSize:24,fontWeight:800,color:x.color}}>{x.val}</div>
-                    <div style={{fontSize:11,color:"#94a3b8",marginTop:2}}>{x.label}</div>
-                  </div>
-                ))}
-              </div>
-              <div style={{height:5,background:"rgba(255,255,255,0.15)",borderRadius:99,overflow:"hidden"}}>
-                <div style={{height:"100%",width:pct+"%",background:"linear-gradient(90deg,#34d399,#60a5fa)",borderRadius:99,transition:"width 0.5s"}}/>
-              </div>
-              <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"#475569",marginTop:5}}>
-                <span>{done.size}/{STUDY_WEEKS.length} weeks done</span>
-                <span>{Math.round(TOTAL_HRS-loggedHrs)}hrs remaining</span>
+              <div style={{fontSize:21,fontWeight:800,marginBottom:14}}>Hi, Vatsala!</div>
+              <div style={{display:"flex",gap:10}}>
+                <div style={{flex:1,background:"rgba(239,68,68,0.15)",borderRadius:10,padding:"10px",textAlign:"center",border:"1px solid rgba(239,68,68,0.3)"}}>
+                  <div style={{fontSize:9,color:"#fca5a5",fontWeight:700,marginBottom:2}}>EXAM 5</div>
+                  <div style={{fontSize:20,fontWeight:800,color:"#f87171"}}>{e5Left}d</div>
+                  <div style={{fontSize:9,color:"#94a3b8"}}>Oct 27 · {e5Pct}%</div>
+                </div>
+                <div style={{flex:1,background:"rgba(59,130,246,0.15)",borderRadius:10,padding:"10px",textAlign:"center",border:"1px solid rgba(59,130,246,0.3)"}}>
+                  <div style={{fontSize:9,color:"#93c5fd",fontWeight:700,marginBottom:2}}>MAS-I</div>
+                  <div style={{fontSize:20,fontWeight:800,color:"#60a5fa"}}>{masLeft}d</div>
+                  <div style={{fontSize:9,color:"#94a3b8"}}>Nov 5 · {masPct}%</div>
+                </div>
               </div>
             </div>
 
             <div style={{padding:"14px 14px 0"}}>
-              {/* Today */}
               <div style={{background:"#fff",borderRadius:12,padding:14,marginBottom:12,border:"2px solid #0f172a"}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
                   <div>
-                    <div style={{fontSize:10,fontWeight:700,color:"#9ca3af",letterSpacing:"0.06em"}}>TODAY'S STUDY TASKS</div>
+                    <div style={{fontSize:10,fontWeight:700,color:"#9ca3af",letterSpacing:"0.06em"}}>TODAY'S TASK</div>
                     <div style={{fontSize:15,fontWeight:700,color:"#0f172a",marginTop:1}}>{todayLabel}</div>
                   </div>
-                  <div style={{background:isWE?"#eff6ff":"#f0fdf4",borderRadius:8,padding:"4px 8px",fontSize:10,fontWeight:700,color:isWE?"#1d4ed8":"#065f46",textAlign:"right",lineHeight:1.6}}>
-                    {isWE?"Weekend":"Weekday"}<br/>{isWE?ph.we:ph.wd}
+                  <div style={{background:isWE?"#fef9c3":"#f1f5f9",borderRadius:8,padding:"4px 10px",fontSize:11,fontWeight:700,color:isWE?"#854d0e":"#475569"}}>
+                    {isWE?"3 hrs":"1 hr"}
                   </div>
                 </div>
-                <div style={{display:"flex",flexDirection:"column",gap:8}}>
-                  <div style={{background:"#fef2f2",borderRadius:8,padding:"9px 12px",borderLeft:"3px solid #ef4444"}}>
-                    <div style={{fontSize:10,color:"#ef4444",fontWeight:700,marginBottom:3}}>EXAM 5 - CA</div>
-                    <div style={{fontSize:13,color:"#111",lineHeight:1.5,fontWeight:500}}>{todayE5}</div>
+                {todayTask ? (
+                  <div style={{background:EX[todayExam].bg,borderRadius:8,padding:"11px 12px",borderLeft:"3px solid "+EX[todayExam].color}}>
+                    <div style={{fontSize:10,color:EX[todayExam].color,fontWeight:700,marginBottom:3}}>{EX[todayExam].name.toUpperCase()} · CA</div>
+                    <div style={{fontSize:13,color:"#111",lineHeight:1.5,fontWeight:500}}>{todayTask.label}</div>
                   </div>
-                  <div style={{background:"#eff6ff",borderRadius:8,padding:"9px 12px",borderLeft:"3px solid #3b82f6"}}>
-                    <div style={{fontSize:10,color:"#3b82f6",fontWeight:700,marginBottom:3}}>MAS-I - CA</div>
-                    <div style={{fontSize:13,color:"#111",lineHeight:1.5,fontWeight:500}}>{todayMas}</div>
+                ) : (
+                  <div style={{background:"#f0fdf4",borderRadius:8,padding:"11px 12px",fontSize:13,color:"#065f46",fontWeight:500}}>
+                    Rest day - no study scheduled
                   </div>
-                </div>
-                {curWeek && curWeek.id<19 && (
-                  <button onClick={()=>toggle(curWeek.id)} style={{width:"100%",marginTop:10,padding:"8px",borderRadius:8,border:"none",cursor:"pointer",fontSize:12,fontWeight:700,background:done.has(curWeek.id)?"#10b981":"#0f172a",color:"#fff"}}>
-                    {done.has(curWeek.id)?"Week marked complete - tap to undo":"Mark this week complete"}
+                )}
+                {todayTask && (
+                  <button onClick={function(){toggleSection(todayExam, todayTask.idx);}} style={{width:"100%",marginTop:10,padding:"8px",borderRadius:8,border:"none",cursor:"pointer",fontSize:12,fontWeight:700,background:done[todayExam].has(todayTask.idx)?"#10b981":"#0f172a",color:"#fff"}}>
+                    {done[todayExam].has(todayTask.idx)?"Section complete - tap to undo":"Mark section complete"}
                   </button>
                 )}
               </div>
 
-              {/* Pace */}
+              <div style={{background:"#fff",borderRadius:12,padding:"10px 14px",marginBottom:12,border:"1px solid #e2e8f0",fontSize:11,color:"#6b7280",lineHeight:1.6}}>
+                <strong style={{color:"#3b82f6"}}>MAS-I</strong>: Mon · Wed · Fri · Sat &nbsp;|&nbsp; <strong style={{color:"#ef4444"}}>Exam 5</strong>: Tue · Thu · Sun
+              </div>
+
               <div style={{background:"#fff",borderRadius:12,padding:14,marginBottom:12,border:"1px solid #e2e8f0"}}>
-                <div style={{fontSize:10,fontWeight:700,color:"#9ca3af",letterSpacing:"0.06em",marginBottom:10}}>ADJUST PACE - tap if you are ahead or behind</div>
-                {[["EXAM 5","e5","#ef4444"],["MAS-I","mas","#3b82f6"]].map(([label,key,color])=>(
-                  <div key={key} style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:key==="e5"?8:0}}>
-                    <span style={{fontSize:12,fontWeight:600,color}}>{label}</span>
+                <div style={{fontSize:10,fontWeight:700,color:"#9ca3af",letterSpacing:"0.06em",marginBottom:10}}>ADJUST PACE</div>
+                {["e5","mas"].map(function(key){
+                  return <div key={key} style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:key==="e5"?8:0}}>
+                    <span style={{fontSize:12,fontWeight:600,color:EX[key].color}}>{EX[key].name}</span>
                     <div style={{display:"flex",alignItems:"center",gap:8}}>
-                      <button onClick={()=>adjust(key,-1)} style={adjBtn}>-</button>
-                      <span style={{fontSize:12,fontWeight:600,minWidth:90,textAlign:"center",color:offsets[key]===0?"#10b981":offsets[key]<0?"#ef4444":"#3b82f6"}}>
+                      <button onClick={function(){adjust(key,-1);}} style={adjBtn}>-</button>
+                      <span style={{fontSize:11,fontWeight:600,minWidth:100,textAlign:"center",color:offsets[key]===0?"#10b981":offsets[key]<0?"#ef4444":"#3b82f6"}}>
                         {offsetLabel(offsets[key])}
                       </span>
-                      <button onClick={()=>adjust(key,1)} style={adjBtn}>+</button>
+                      <button onClick={function(){adjust(key,1);}} style={adjBtn}>+</button>
                     </div>
-                  </div>
-                ))}
+                  </div>;
+                })}
               </div>
 
-              {/* Tomorrow */}
-              {(tomE5||tomMas) && (
-                <div style={{background:"#fff",borderRadius:12,padding:14,marginBottom:12,border:"1px solid #e2e8f0"}}>
-                  <div style={{fontSize:10,fontWeight:700,color:"#9ca3af",letterSpacing:"0.06em",marginBottom:8}}>TOMORROW - {tomLabel}</div>
-                  {tomE5 && <div style={{fontSize:12,color:"#6b7280",marginBottom:4}}><span style={{color:"#ef4444",fontWeight:600}}>E5: </span>{tomE5}</div>}
-                  {tomMas && <div style={{fontSize:12,color:"#6b7280"}}><span style={{color:"#3b82f6",fontWeight:600}}>MAS: </span>{tomMas}</div>}
-                </div>
-              )}
-
-              {/* Checkpoint */}
-              <div style={{background:"#fffbeb",borderRadius:12,padding:14,marginBottom:12,border:"1px solid #fde68a"}}>
-                <div style={{fontSize:10,fontWeight:700,color:"#d97706",letterSpacing:"0.06em",marginBottom:4}}>WEEK 8 CHECKPOINT - Aug 3</div>
-                <div style={{fontSize:12,color:"#92400e",lineHeight:1.5}}>After mock #1, if Ratemaking is still shaky, consider dropping MAS-I and going all-in on Exam 5.</div>
+              <div style={{background:"#fff",borderRadius:12,padding:14,marginBottom:12,border:"1px solid #e2e8f0"}}>
+                <div style={{fontSize:10,fontWeight:700,color:"#9ca3af",letterSpacing:"0.06em",marginBottom:6}}>TOMORROW - {tomLabel}</div>
+                {tomTask ? (
+                  <div style={{fontSize:12,color:"#6b7280"}}><span style={{color:EX[tomExam].color,fontWeight:600}}>{EX[tomExam].name}: </span>{tomTask.label}</div>
+                ) : (
+                  <div style={{fontSize:12,color:"#9ca3af"}}>Rest day</div>
+                )}
               </div>
 
-              {/* Target */}
               <div style={{background:"linear-gradient(135deg,#065f46,#0f766e)",borderRadius:12,padding:14,marginBottom:4,color:"#fff"}}>
-                <div style={{fontSize:10,fontWeight:700,color:"#6ee7b7",letterSpacing:"0.06em",marginBottom:4}}>TARGET</div>
-                <div style={{fontSize:14,fontWeight:700}}>October 27, 2026 - Exam Day</div>
-                <div style={{fontSize:12,color:"#a7f3d0",marginTop:3}}>Exam 5 (Ratemaking & Reserving) + MAS-I</div>
+                <div style={{fontSize:10,fontWeight:700,color:"#6ee7b7",letterSpacing:"0.06em",marginBottom:6}}>TARGETS</div>
+                <div style={{fontSize:13,fontWeight:700,marginBottom:2}}>Exam 5 - October 27, 2026</div>
+                <div style={{fontSize:13,fontWeight:700}}>MAS-I - November 5, 2026</div>
               </div>
             </div>
           </div>
@@ -393,33 +308,34 @@ function App() {
 
         {tab==="plan" && (
           <div style={{padding:14}}>
-            <div style={{fontSize:17,fontWeight:800,marginBottom:12,color:"#0f172a"}}>Weekly Plan</div>
-            <div style={{display:"flex",gap:6,marginBottom:14}}>
-              {[["All",0],["P1",1],["P2",2],["P3",3]].map(([l,v])=>(
-                <button key={v} onClick={()=>setFilter(v)} style={{padding:"5px 14px",fontSize:12,borderRadius:99,cursor:"pointer",border:"none",fontWeight:filter===v?700:400,background:filter===v?"#0f172a":"#e2e8f0",color:filter===v?"#fff":"#64748b"}}>{l}</button>
-              ))}
+            <div style={{fontSize:17,fontWeight:800,marginBottom:12,color:"#0f172a"}}>Full Plan</div>
+            <div style={{display:"flex",gap:8,marginBottom:14}}>
+              {["e5","mas"].map(function(id){
+                return <button key={id} onClick={function(){setPlanExam(id);}} style={{flex:1,padding:"8px",borderRadius:8,border:"none",cursor:"pointer",fontSize:13,fontWeight:planExam===id?700:400,background:planExam===id?EX[id].color:"#e2e8f0",color:planExam===id?"#fff":"#64748b"}}>
+                  {EX[id].name}
+                </button>;
+              })}
             </div>
-            <div style={{display:"flex",flexDirection:"column",gap:8}}>
-              {WEEKS.filter(w=>filter===0||w.phase===filter).map(w=>{
-                const m=PHASE_META[w.phase], isDone=done.has(w.id), isCur=w.id===curId, isExam=w.id===19;
+            <div style={{display:"flex",flexDirection:"column",gap:6}}>
+              {planSections.map(function(sec,i){
+                const isDone = done[planExam].has(i);
+                const isLast = i===planSections.length-1;
+                const dk = planDates[i];
+                let dlabel = "";
+                if (dk) { const p=dk.split('-').map(Number); dlabel=MN[p[1]-1]+" "+p[2]; }
+                const isPractice = /ADAPT|Light review|got this/i.test(sec[0]);
                 return (
-                  <div key={w.id} onClick={()=>toggle(w.id)} style={{background:"#fff",borderRadius:12,padding:12,cursor:isExam?"default":"pointer",border:isCur?"2px solid #0f172a":isExam?"2px solid #10b981":"1px solid #e2e8f0",opacity:isDone&&!isExam?0.6:1,transition:"opacity 0.2s"}}>
-                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-                      <div style={{display:"flex",alignItems:"center",gap:8}}>
-                        {!isExam && <Checkbox checked={isDone}/>}
-                        <div>
-                          <div style={{fontSize:13,fontWeight:700,color:isExam?"#065f46":"#0f172a",display:"flex",alignItems:"center",gap:5}}>
-                            {isCur && <span style={{fontSize:9,background:"#0f172a",color:"#fff",borderRadius:4,padding:"1px 5px"}}>NOW</span>}
-                            {isExam?"Exam Week":"Week "+w.id+(w.id===0?" (Kickoff)":"")}
-                          </div>
-                          <div style={{fontSize:11,color:"#94a3b8"}}>{adjustedDates(w, offsets.e5)}{w.hrs>0?" - "+w.hrs+"hrs":""}</div>
-                        </div>
+                  <div key={i} onClick={function(){ if(!isLast) toggleSection(planExam,i); }} style={{background:"#fff",borderRadius:10,padding:"10px 12px",cursor:isLast?"default":"pointer",border:isLast?"2px solid #10b981":"1px solid #e2e8f0",opacity:isDone&&!isLast?0.55:1,display:"flex",alignItems:"flex-start",gap:10}}>
+                    {!isLast && (
+                      <div style={{width:18,height:18,borderRadius:4,flexShrink:0,marginTop:1,border:"1.5px solid "+(isDone?"#10b981":"#d1d5db"),background:isDone?"#10b981":"transparent",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                        {isDone&&<span style={{color:"#fff",fontSize:11}}>✓</span>}
                       </div>
-                      <div style={{fontSize:10,padding:"2px 8px",borderRadius:99,background:m.bg,color:m.color,border:"1px solid "+m.border,fontWeight:700,whiteSpace:"nowrap"}}>{m.label}</div>
-                    </div>
-                    <div style={{display:"flex",flexDirection:"column",gap:4}}>
-                      <div style={{fontSize:12,color:isDone?"#9ca3af":"#374151",textDecoration:isDone?"line-through":"none"}}><span style={{color:"#ef4444",fontWeight:600}}>E5: </span>{w.e5}</div>
-                      <div style={{fontSize:12,color:isDone?"#9ca3af":"#374151",textDecoration:isDone?"line-through":"none"}}><span style={{color:"#3b82f6",fontWeight:600}}>MAS: </span>{w.mas}</div>
+                    )}
+                    <div style={{flex:1}}>
+                      <div style={{fontSize:12,color:isDone?"#9ca3af":"#111",textDecoration:isDone?"line-through":"none",lineHeight:1.4}}>{sec[0]}</div>
+                      <div style={{fontSize:10,color:isPractice?"#8b5cf6":"#9ca3af",marginTop:2}}>
+                        {dlabel?("from "+dlabel+" · "):(sec[1]===0?"completed · ":"")}{sec[1]} session{sec[1]===1?"":"s"}
+                      </div>
                     </div>
                   </div>
                 );
@@ -429,13 +345,12 @@ function App() {
         )}
       </div>
 
-      {/* Bottom nav */}
       <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:480,background:"#fff",borderTop:"1px solid #e2e8f0",display:"flex",height:60,zIndex:10}}>
-        {[{id:"home",label:"Home"},{id:"plan",label:"Plan"}].map(t=>(
-          <button key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",color:tab===t.id?"#0f172a":"#94a3b8"}}>
-            <span style={{fontSize:13,fontWeight:tab===t.id?700:400}}>{t.label}</span>
-          </button>
-        ))}
+        {[{id:"home",label:"Home"},{id:"plan",label:"Full Plan"}].map(function(t){
+          return <button key={t.id} onClick={function(){setTab(t.id);}} style={{flex:1,background:"none",border:"none",cursor:"pointer",fontSize:13,fontWeight:tab===t.id?700:400,color:tab===t.id?"#0f172a":"#94a3b8"}}>
+            {t.label}
+          </button>;
+        })}
       </div>
     </div>
   );
